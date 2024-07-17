@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | Homey</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #3b5d50;
+            font-family: 'Poppins', sans-serif;
+        }
+        .signup-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .signup-form {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+        .signup-form h2 {
+            color: #3b5d50;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+        .form-group label {
+            font-weight: bold;
+            color: #3b5d50;
+        }
+        .form-control {
+            border: none;
+            border-bottom: 1px solid black; 
+            border-radius: 0;
+            box-shadow: none;
+        }
+        .form-control:focus {
+            border-color: #3b5d50;
+            box-shadow: none;
+        }
+        .btn-custom {
+            background-color: #3b5d50;
+            color: white;
+            font-weight: bold;
+            border: none;
+            padding: 10px 0; 
+        }
+        .btn-custom:hover {
+            background-color: #3b5d50;
+        }
+        .btn-google {
+            background-color: #db4437;
+            color: white;
+            font-weight: bold;
+            margin-top: 15px;
+            border: none;
+            padding: 10px 0; 
+        }
+        .btn-google:hover {
+            background-color: #c23321;
+        }
+        .form-text {
+            color: #3b5d50;
+            text-align: center;
+        }
+        .signup-form a {
+            color: #3b5d50;
+        }
+        .signup-form a:hover {
+            color: #3b5d50;
+        }
+        .error-message {
+            color: #c23321;
+            font-size: .75rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="signup-container">
+        <div class="signup-form">
+            <h2>Sign Up for Homey</h2>
+            <form id="signform" action="/signup" method="POST">
+                <div class="form-group">
+                    <label for="fullname">Full Name</label>
+                    <input type="text" class="form-control" id="name" name="name" required>
+                    <div id="error1" class="error-message"></div>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email address</label>
+                    <input type="email" class="form-control" id="email" name="email" required>
+                    <div id="error2" class="error-message"></div>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" class="form-control" id="phone" name="phone" required>
+                    <div id="error3" class="error-message"></div>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                    <div id="error4" class="error-message"></div>
+                </div>
+                <div class="form-group">
+                    <label for="confirm-password">Confirm Password</label>
+                    <input type="password" class="form-control" id="cPassword" name="cPassword" required>
+                    <div id="error5" class="error-message"></div>
+                </div>
+                <button type="submit" class="btn btn-custom btn-block">Sign Up</button>
+                <button type="button" class="btn btn-google btn-block">Sign Up with Google</button>
+                <p class="form-text mt-3">Already have an account? <a href="/login">Login here</a></p>
+            </form>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        const nameid = document.getElementById("name");
+        const emailid = document.getElementById("email");
+        const phoneid = document.getElementById("phone");
+        const passid = document.getElementById("password");
+        const cpassid = document.getElementById("confirm-password");
+        const error1 = document.getElementById("error1");
+        const error2 = document.getElementById("error2");
+        const error3 = document.getElementById("error3");
+        const error4 = document.getElementById("error4");
+        const error5 = document.getElementById("error5");
+        const signform = document.getElementById("signform");
+
+        function nameValidateChecking(e) {
+            const nameVal = nameid.value;
+            const namePattern = /^[A-Za-z\s]+$/;
+
+            if (nameVal.trim() === "") {
+                error1.style.display = "block";
+                error1.innerHTML = "Please enter a valid name";
+            } else if (!namePattern.test(nameVal)) {
+                error1.style.display = "block";
+                error1.innerHTML = "Name can only contain alphabets and spaces";
+            } else {
+                error1.style.display = "none";
+                error1.innerHTML = "";
+            }
+        }
+
+        function emailValidateChecking(e) {
+            const emailVal = emailid.value;
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(emailVal)) {
+                error2.style.display = "block";
+                error2.innerHTML = "Invalid format";
+            } else {
+                error2.style.display = "none";
+                error2.innerHTML = "";
+            }
+        }
+
+        function phoneValidateChecking(e) {
+            const phoneVal = phoneid.value;
+            if (phoneVal.trim() === "") {
+                error3.style.display = "block";
+                error3.innerHTML = "Enter a valid phone number";
+            } else {
+                error3.style.display = "none";
+                error3.innerHTML = "";
+            }
+        }
+
+        function passValidateChecking(e) {
+            const passVal = passid.value;
+            const cpassVal = cpassid.value;
+            const alpha = /[a-zA-Z]/;
+            const digit = /\d/;
+
+            if (passVal.length < 8) {
+                error4.style.display = "block";
+                error4.innerHTML = "Password should contain at least 8 characters";
+            } else if (!alpha.test(passVal) || !digit.test(passVal)) {
+                error4.style.display = "block";
+                error4.innerHTML = "Password should contain numbers and letters";
+            } else {
+                error4.style.display = "none";
+                error4.innerHTML = "";
+            }
+
+            if (passVal !== cpassVal) {
+                error5.style.display = "block";
+                error5.innerHTML = "Passwords do not match";
+            } else {
+                error5.style.display = "none";
+                error5.innerHTML = "";
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            signform.addEventListener("submit", function(e) {
+                nameValidateChecking();
+                emailValidateChecking();
+                phoneValidateChecking();
+                passValidateChecking();
+
+                if (error1.innerHTML || error2.innerHTML || error3.innerHTML || error4.innerHTML || error5.innerHTML) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
