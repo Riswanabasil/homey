@@ -2,6 +2,7 @@ const User=require("../../models/userSchema")
 const env=require("dotenv").config()
 const nodemailer=require("nodemailer")
 const bcrypt=require("bcrypt")
+const Product=require("../../models/productSchema")
 //load home page
 const loadHomepage=async(req,res)=>{
     try {
@@ -14,10 +15,43 @@ const loadHomepage=async(req,res)=>{
 // load signup
 const loadSignup= async(req,res)=>{
     try {
-        return res.render("signup")
+        return res.render("signup",{message:""})
     } catch (error) {
         console.log("signup page is not loading",error);
         res.status(500).send("server error")
+    }
+}
+// load login
+
+const loadLogin=async(req,res)=>{
+    try {
+        return res.render("login",{message:""})
+    } catch (error) {
+        console.log("signup page is not loading",error);
+        res.status(500).send("server error")
+    }
+}
+
+const login=async (req,res)=>{
+    try {
+        const {email,password}=req.body
+        const findUser=await User.findOne({isAdmin:0,email:email})
+        if(!findUser){
+            return res.render("login",{message:"user not found"})
+        }
+        if(findUser.isBlocked){
+            return res.render("login",{message:"user is blocked by admin"})
+        }
+        const passwordMatch=await bcrypt.compare(password,findUser.password)
+        if(!passwordMatch){
+            return res.render("login",{message:"Incorrect username or password"})
+        }
+        req.session.user=findUser._id
+
+        res.redirect("/shop")
+    } catch (error) {
+        console.error("login error",error)
+        res.render("login",{message:"login failed, try again later"})
     }
 }
 // OTP verification
@@ -141,10 +175,35 @@ const resendOtp=async(req,res)=>{
 
 const loadShop=async(req,res)=>{
     try {
-        return res.render("shop")
+        const products = await Product.find({isBlocked:false}).exec();
+        return res.render("shop",{products})
     } catch (error) {
         console.log("shop page is not loading",error);
         res.status(500).send("server error")
     }
 }
-module.exports={loadHomepage, loadSignup, signup,verifyotp,resendOtp,loadShop}
+
+const getProductDetails=async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id).populate('category');
+        const relatedProducts = await Product.find({ category: product.category, _id: { $ne: product._id } }).limit(4);
+
+        res.render('detail', { product, relatedProducts });
+    } catch (error) {
+        console.error('Error fetching product detail:', error);
+        res.redirect('/');
+    }
+};
+
+//logout
+
+const logout=(req,res)=>{
+    req.session.destroy((err) => {
+        if (err) {
+            return res.redirect('/shop');
+        }
+        res.clearCookie('connect.sid');
+        res.redirect('/');
+    });
+}
+module.exports={loadHomepage, loadSignup, signup,verifyotp,resendOtp,loadShop,loadLogin,login,getProductDetails,logout}

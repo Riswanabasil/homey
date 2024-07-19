@@ -88,6 +88,9 @@
     <div class="signup-container">
         <div class="signup-form">
             <h2>Sign Up for Homey</h2>
+            <% if (message) { %>
+                <div class="alert alert-danger"><%= message %></div>
+            <% } %>
             <form id="signform" action="/signup" method="POST">
                 <div class="form-group">
                     <label for="fullname">Full Name</label>
@@ -115,7 +118,7 @@
                     <div id="error5" class="error-message"></div>
                 </div>
                 <button type="submit" class="btn btn-custom btn-block">Sign Up</button>
-                <button type="button" class="btn btn-google btn-block">Sign Up with Google</button>
+                <a href="/auth/google" type="button" class="btn btn-google btn-block">Sign Up with Google</a>
                 <p class="form-text mt-3">Already have an account? <a href="/login">Login here</a></p>
             </form>
         </div>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product | Homey</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .navbar, .sidebar {
+            background-color: #3b5d50;
+        }
+        .navbar-brand, .nav-link, .logout-btn {
+            color: white !important;
+        }
+        .d-flex {
+            display: flex;
+        }
+        .sidebar {
+            width: 200px;
+            height: 100vh;
+            padding: 1rem;
+            background-color: #3b5d50;
+        }
+        .sidebar .nav-link {
+            color: white;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #2f4a41;
+            border-radius: 4px;
+        }
+        .container {
+            margin-top: 20px;
+            flex-grow: 1;
+        }
+        .form-group label {
+            font-weight: bold;
+        }
+        .btn-custom {
+            background-color: #3b5d50;
+            color: white;
+            font-weight: bold;
+            border: none;
+        }
+        .btn-custom:hover {
+            background-color: #2f4a41;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+            .sidebar .nav-link {
+                text-align: center;
+            }
+        }
+        @media (max-width: 576px) {
+            .d-flex {
+                flex-direction: column;
+            }
+            .container {
+                margin-top: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <a class="navbar-brand" href="#">Homey</a>
+        <div class="collapse navbar-collapse justify-content-end">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link logout-btn" href="/admin/logout">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="d-flex">
+        <div class="sidebar">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/dashboard">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/category">Category</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/product">Product</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/user">User</a>
+                </li>
+            </ul>
+        </div>
+
+        <main class="mt-5 pt-3">
+            <div class="container-fluid">
+              <div class="row">
+                <div class="col-md-12">
+                 
+              
+                    <div class="container mt-5">
+                        <h2><%= product ? 'Edit Product' : 'Add Product' %></h2>
+                        <form action="<%= product ? '/admin/product/edit/' + product._id : '/admin/product/add' %>" method="POST" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="productName" class="form-label">Product Name</label>
+                                <input type="text" class="form-control" id="productName" name="productName" value="<%= product ? product.productName : '' %>" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea class="form-control" id="description" name="description" required><%= product ? product.description : '' %></textarea>
+                            </div>
+                            <!-- <div class="mb-3">
+                                <label for="author" class="form-label">Author</label>
+                                <input type="text" class="form-control" id="author" name="author" value="<%= product ? product.author : '' %>" required>
+                            </div> -->
+                            <div class="mb-3">
+                                <label for="category" class="form-label">Category</label>
+                                <select class="form-control" id="category" name="category" required>
+                                    <% categories.forEach(category => { %>
+                                        <option value="<%= category._id %>" <%= product && product.category.equals(category._id) ? 'selected' : '' %>><%= category.name %></option>
+                                    <% }) %>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="regularPrice" class="form-label">Regular Price</label>
+                                <input type="number" class="form-control" id="regularPrice" name="regularPrice" value="<%= product ? product.regularPrice : '' %>" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="salePrice" class="form-label">Sale Price</label>
+                                <input type="number" class="form-control" id="salePrice" name="salePrice" value="<%= product ? product.salePrice : '' %>" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="productOffer" class="form-label">Product Offer (%)</label>
+                                <input type="number" class="form-control" id="productOffer" name="productOffer" value="<%= product ? product.productOffer : '' %>" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="quantity" class="form-label">Quantity</label>
+                                <input type="number" class="form-control" id="quantity" name="quantity" value="<%= product ? product.quantity : '' %>" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="productImage" class="form-label">Product Images</label>
+                                <input type="file" class="form-control" id="productImage" name="productImage" value="<%= product ? product.productImage : '' %>" multiple required>
+                            </div>
+                            <button type="submit" class="btn btn-primary"><%= product ? 'Update Product' : 'Add Product' %></button>
+                        </form>
+                    </div>
+    </div>
+    </div>
+    </div>
+    </main>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
