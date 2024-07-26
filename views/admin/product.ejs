@@ -25,6 +25,8 @@
             height: 100vh;
             padding: 1rem;
             background-color: #3b5d50;
+            box-sizing: border-box;
+            overflow-y: auto;
         }
         .sidebar .nav-link {
             color: white;
@@ -120,7 +122,6 @@
                                     <th>Product Image</th>
                                     <th>Product Name</th>
                                     <th>Description</th>
-                                    <!-- <th>Author</th> -->
                                     <th>Category</th>
                                     <th>Regular Price</th>
                                     <th>Sale Price</th>
@@ -141,7 +142,6 @@
                                         </td>
                                         <td><%= product.productName %></td>
                                         <td><%= product.description %></td>
-                                        <!-- <td><%= product.author %></td> -->
                                         <td><%= product.category.name %></td>
                                         <td><%= product.regularPrice %></td>
                                         <td><%= product.salePrice %></td>

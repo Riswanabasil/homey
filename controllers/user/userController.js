@@ -46,8 +46,8 @@ const login=async (req,res)=>{
         if(!passwordMatch){
             return res.render("login",{message:"Incorrect username or password"})
         }
-        req.session.user=findUser._id
-
+        req.session.user=findUser
+        
         res.redirect("/shop")
     } catch (error) {
         console.error("login error",error)
@@ -186,7 +186,7 @@ const loadShop=async(req,res)=>{
 const getProductDetails=async (req, res) => {
     try {
         const product = await Product.findById(req.params.id).populate('category');
-        const relatedProducts = await Product.find({ category: product.category, _id: { $ne: product._id } }).limit(4);
+        const relatedProducts = await Product.find({ category: product.category, _id: { $ne: product._id } }).limit(5);
 
         res.render('detail', { product, relatedProducts });
     } catch (error) {

@@ -19,7 +19,7 @@ const upload = multer({
 }).array('productImage', 3); // Allow up to 3 images
 
 function checkFileType(file, cb) {
-    const filetypes = /jpeg|jpg|png|gif/;
+    const filetypes = /jpeg|jpg|png|gif|avif|webp/;
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = filetypes.test(file.mimetype);
 
@@ -92,7 +92,6 @@ exports.editProduct = (req, res) => {
             try {
                 const { productName, description, author, category, regularPrice, salePrice, productOffer, quantity } = req.body;
                 const productImages = req.files.length ? req.files.map(file => '/uploads/' + file.filename) : undefined;
-
                 const product = await Product.findById(req.params.id);
 
                 product.productName = productName;
@@ -104,6 +103,7 @@ exports.editProduct = (req, res) => {
                 product.productOffer = productOffer;
                 product.quantity = quantity;
                 if (productImages) product.productImage = productImages;
+
 
                 await product.save();
                 res.redirect('/admin/product');
@@ -124,5 +124,24 @@ exports.toggleProductStatus = async (req, res) => {
     } catch (error) {
         console.error('Error toggling product status:', error);
         res.redirect('/admin/product');
+    }
+};
+
+exports.removeProductImage = async (req, res) => {
+    try {
+        const { productId, index } = req.body;
+        const product = await Product.findById(productId);
+
+        if (!product) {
+            return res.status(404).send('Product not found');
+        }
+
+        product.productImage.splice(index, 1);
+        await product.save();
+
+        res.status(200).send('Image removed successfully');
+    } catch (error) {
+        console.error('Error removing image:', error);
+        res.status(500).send('Error removing image');
     }
 };

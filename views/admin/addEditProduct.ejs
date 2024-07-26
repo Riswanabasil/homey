@@ -22,7 +22,7 @@
         }
         .sidebar {
             width: 200px;
-            height: 100vh;
+            height: 180vh;
             padding: 1rem;
             background-color: #3b5d50;
         }
@@ -66,6 +66,18 @@
                 margin-top: 0;
             }
         }
+        .current-images img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+
+.current-images .remove-btn {
+  display: block;
+  margin-top: 5px;
+}
     </style>
 </head>
 <body>
@@ -143,20 +155,84 @@
                                 <label for="quantity" class="form-label">Quantity</label>
                                 <input type="number" class="form-control" id="quantity" name="quantity" value="<%= product ? product.quantity : '' %>" required>
                             </div>
-                            <div class="mb-3">
+                            <!-- <div class="mb-3">
                                 <label for="productImage" class="form-label">Product Images</label>
                                 <input type="file" class="form-control" id="productImage" name="productImage" value="<%= product ? product.productImage : '' %>" multiple required>
                             </div>
-                            <button type="submit" class="btn btn-primary"><%= product ? 'Update Product' : 'Add Product' %></button>
+                            <button type="submit" class="btn btn-primary"><%= product ? 'Update Product' : 'Add Product' %></button> -->
+                            <div class="mb-3">
+                                <label for="productImage" class="form-label">Product Images</label>
+                                <input type="file" class="form-control" id="productImage" name="productImage"value="<%= product ? product.productImage : '' %>" multiple required>
+                              </div>
+                              <div class="mb-3">
+                                <label>Current Images:</label>
+                                <!-- <div class="current-images">
+                                  <% if (product && product.productImage && product.productImage.length > 0) { %>
+                                    <% product.productImage.forEach((image,index) => { %>
+                                      <div class="current-image">
+                                        <img src="<%= image %>" alt="Product Image">
+                                        <button type="button" class="btn btn-danger btn-sm remove-image" data-index="<%= index %>" data-product-id="<%= product._id %>">Remove</button>
+                                      </div>
+                                    <% }) %>
+                                  <% } else { %>
+                                    <p>No images uploaded.</p>
+                                  <% } %>
+                                </div> -->
+
+                              </div>
+                              <div id="image-container">
+                                <% if (product && product.productImage.length > 0) { %>
+                                    <% product.productImage.forEach((image, index) => { %>
+                                        <div class="img-thumbnail-wrapper">
+                                            <img src="<%= image %>" alt="Product Image" class="img-thumbnail" style="width: 150px; height: auto;">
+                                            <button type="button" class="btn btn-danger btn-sm remove-image" data-index="<%= index %>" data-product-id="<%= product._id %>">Remove</button>
+                                        </div>
+                                    <% }) %>
+                                <% } %>
+                            </div>
+                              <button type="submit" class="btn btn-primary"><%= product ? 'Update Product' : 'Add Product' %></button>
                         </form>
                     </div>
     </div>
     </div>
     </div>
     </main>
+    <script>
+        document.querySelectorAll('.remove-image').forEach(button => {
+              button.addEventListener('click', function() {
+                  const index = this.getAttribute('data-index');
+                  const productId = this.getAttribute('data-product-id');
+                  const xhr = new XMLHttpRequest();
+                  xhr.open('POST', '/admin/product/remove-image', true);
+                  xhr.setRequestHeader('Content-Type', 'application/json');
+                  xhr.onreadystatechange = function() {
+                      if (xhr.readyState === 4 && xhr.status === 200) {
+                          location.reload();
+                      }
+                  };
+                  xhr.send(JSON.stringify({ productId, index }));
+              });
+          });
+    </script>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          const removedImages = [];
+          document.querySelectorAll('.remove-btn').forEach(button => {
+            button.addEventListener('click', function() {
+              const image = this.getAttribute('data-image');
+              removedImages.push(image);
+              document.getElementById('removedImages').value = removedImages.join(',');
+              this.parentElement.remove();
+
+           
+          imageWrapper.remove();
+            });
+          });
+        });
+      </script> -->
 </body>
 </html>

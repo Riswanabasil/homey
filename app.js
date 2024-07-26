@@ -23,10 +23,18 @@ app.use(session({
 }))
 app.use(passport.initialize())
 app.use(passport.session())
-app.use((req,res,next)=>{
-    res.set("cache-control","no-store")
-    next()
-})
+// app.use((req,res,next)=>{
+//     res.setHeader("cache-control","no-store")
+//     next()
+// })
+
+app.use((req, res, next) => {
+    res.setHeader("cache-control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+    res.setHeader("Surrogate-Control", "no-store");
+    next();
+});
 
 // Set up storage engine
 const storage = multer.diskStorage({
@@ -39,11 +47,11 @@ const storage = multer.diskStorage({
 // Initialize upload
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 1000000 }, // limit file size to 1MB
+    limits: { fileSize: 1000000 }, 
     fileFilter: (req, file, cb) => {
         checkFileType(file, cb);
     }
-}).array('productImage', 3); // Allow up to 3 images
+}).array('productImage', 3); 
 
 // Check file type
 function checkFileType(file, cb) {
