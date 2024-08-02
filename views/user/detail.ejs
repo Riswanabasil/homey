@@ -36,7 +36,28 @@
 </head>
 
 <body id="motorola-moto-360-2nd-gen" class="digi-1 v3.1 template-product">
-	<%-include("../../views/partials/user/header")%>
+	<nav class="custom-navbar navbar navbar navbar-expand-md navbar-dark bg-dark" arial-label="Furni navigation bar">
+		<div class="container">
+		  <a class="navbar-brand" href="/">Homey<span>.</span></a>
+		  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsFurni" aria-controls="navbarsFurni" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		  </button>
+		  <div class="collapse navbar-collapse" id="navbarsFurni">
+			<ul class="custom-navbar-nav navbar-nav ms-auto mb-2 mb-md-0">
+			  <li class="nav-item ">
+				<a class="nav-link" href="/">Home</a>
+			  </li>
+			  <li><a class="nav-link" href="/shop">Shop</a></li>
+			  <li><a class="nav-link" href="/logout">Logout</a></li>
+			  
+			</ul>
+			<ul class="custom-navbar-cta navbar-nav mb-2 mb-md-0 ms-5">
+			  <li><a class="nav-link" href="/profile"><img src="/images/user.svg"></a></li>
+			  <li><a class="nav-link" href="/cart"><img src="images/cart.svg"></a></li>
+			</ul>
+		  </div>
+		</div>
+	  </nav>
 		<div id="NavDrawer" class="drawer drawer--left">
 			<div id="shopify-section-drawer-menu" class="shopify-section">
 				<div data-section-id="drawer-menu" data-section-type="drawer-menu-section">
@@ -205,31 +226,6 @@
 								<meta itemprop="image" content="//digital-world-store.myshopify.com/cdn/shop/products/Untitled-189_grande.jpg?v=1482830978">
 								<div class="next-prev-products"> </div>
 								<div class="grid product-single">
-									<!-- <div class="grid__item large--two-fifths text-center">
-                    
-										<% if (product.productImage && product.productImage.length > 0) { %>
-												<div class="product-single__photos elevatezoom" id="ProductPhoto"> 
-													<img  src="<%= product.productImage[0]%>" alt="Motorola Moto 360 (2nd gen)" id="ProductPhotoImg" data-image-id="21477894598" data-zoom-image="<%= product.productImage[0] %>"> 
-											  </div>
-										  <% } %>
-										<script>
-										if($(window).innerWidth() <= 580) {
-											$('#ProductPhoto img').removeAttr('id');
-										}
-										</script>
-										<% if (product && product.productImage && product.productImage.length > 0) { %>
-										<ul class="product-single__thumbnails grid-uniform" id="ProductThumbs">
-											
-												<% product.productImage.forEach((image) => { %>
-											<li class="thumb__element">
-												<a href="C:/Users/91962/Desktop/Brocamp/Homey/public/css/cdn/shop/products/cdn/shop/products/Untitled-189_1024x10249ba5.jpg" class="product-single__thumbnail"> 
-													<img src="<%= image %>" alt="Motorola Moto 360 (2nd gen)"> 
-												</a>
-											</li>
-											<% }) %>
-										</ul>
-										<% } %>
-									</div> -->
 									<div class="grid__item large--two-fifths text-center">
 										<% if (product.productImage && product.productImage.length > 0) { %>
 											<div class="product-single__photos elevatezoom" id="ProductPhoto"> 
@@ -276,7 +272,7 @@
 												</div> <span class="rating"><span class="shopify-product-reviews-badge" data-id="9059380358"></span></span>
 												<meta itemprop="priceCurrency" content="USD">
 												<link itemprop="availability" href="http://schema.org/InStock">
-												<form action="https://digital-world-store.myshopify.com/cart/add" method="post" enctype="multipart/form-data" class="product-single__form AddToCartForm" id="">
+												<!-- <form action="https://digital-world-store.myshopify.com/cart/add" method="post" enctype="multipart/form-data" class="product-single__form AddToCartForm" id=""> -->
 													<div class="product-single__description rte" itemprop="description">
 														<ul class="spec">
 															<h4>Description</h4>
@@ -306,13 +302,11 @@
 														<option data-sku="" value="33570737222"> Silver / 46mm - <span class=money>$549.99 USD</span> </option>
 													</select>
 													<div class="product-single__add-to-cart">
-														<button type="submit" name="add" id="AddToCart" class="btn AddToCart"> <span id="AddToCartText">
-                      
-                        Add to Cart
-                      
-                    </span> </button>
+														
+														
+					<button onclick="addToCart('<%= product._id %>')" class="btn btn-primary">Add to Cart</button>
 													</div>
-												</form>
+												<!-- </form> -->
 											</div>
 										</div>
 										
@@ -1310,6 +1304,39 @@
 				<% }); %>
 		</div> -->
 		</div>
+		<script>
+			function addToCart(productId) {
+				fetch(`/add-to-cart/${productId}`)
+					.then(response => response.json())
+					.then(data => {
+						if (data.success) {
+							Swal.fire({
+								icon: 'success',
+								title: 'Success',
+								text: data.message,
+							}).then(() => {
+								window.location.reload();
+							});
+						} else {
+							Swal.fire({
+								icon: 'error',
+								title: 'Error',
+								text: data.message,
+							});
+						}
+					})
+					.catch(error => {
+						console.error('Error:', error);
+						Swal.fire({
+							icon: 'error',
+							title: 'Error',
+							text: 'An error occurred while adding the product to the cart',
+						});
+					});
+			}
+		</script>
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 		<%-include("../../views/partials/user/footer")%>
 			<script src="/js/bootstrap.bundle.min.js"></script>
 </body>

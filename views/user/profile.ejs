@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="author" content="Untree.co">
+  <link rel="shortcut icon" href="favicon.png">
+  <meta name="description" content="" />
+  <meta name="keywords" content="bootstrap, bootstrap4" />
+  <title>User Profile</title>
+  <!-- Bootstrap CSS -->
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <link href="/css/style.css" rel="stylesheet">
+</head>
+
+<body>
+  <!-- Start Header/Navigation -->
+  <nav class="custom-navbar navbar navbar navbar-expand-md navbar-dark bg-dark" arial-label="Furni navigation bar">
+
+    <div class="container">
+        <a class="navbar-brand" href="index.html">Homey<span>.</span></a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsFurni" aria-controls="navbarsFurni" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarsFurni">
+            <ul class="custom-navbar-nav navbar-nav ms-auto mb-2 mb-md-0">
+                <li class="nav-item ">
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+                <li><a class="nav-link" href="/shop">Shop</a></li>
+                
+                <li><a class="nav-link" href="/logout">Logout</a></li>
+            </ul>
+
+            <ul class="custom-navbar-cta navbar-nav mb-2 mb-md-0 ms-5">
+                
+                <li><a class="nav-link" href="/cart"><img src="images/cart.svg"></a></li>
+            </ul>
+        </div>
+    </div>
+        
+</nav>
+  <!-- End Header/Navigation -->
+
+  <div class="container mt-5">
+    <div class="card mb-4">
+        <div class="card-body">
+            <h4 class="card-title">Hello, <%= user.name %></h4>
+            <p class="card-text">Email: <%= user.email %></p>
+            <p class="card-text">Phone: <%= user.phone %></p>
+            <a href="/edit-profile" class="btn btn-primary">Edit Profile</a>
+        </div>
+    </div>
+
+    <div class="p-3 mb-3" style="background-color: #f8f9fa;">
+      <button id="addAddressBtn" class="btn btn-primary mb-3">Add Address</button>
+      <div class="row">
+          <div class="col-md-12" id="addAddressForm" style="display: none;">
+              <form action="/add-address" method="POST">
+                  <div class="row">
+                      <div class="form-group col-md-6 mb-3">
+                          <input type="text" placeholder="Name" name="name" class="form-control" required>
+                      </div>
+                      <div class="form-group col-md-6 mb-3">
+                          <input type="text" placeholder="City" name="city" class="form-control" required>
+                      </div>
+                  </div>
+                  <div class="row">
+                      <div class="form-group col-md-6 mb-3">
+                          <input type="text" placeholder="Landmark" name="landMark" class="form-control" required>
+                      </div>
+                      <div class="form-group col-md-6 mb-3">
+                          <input type="text" placeholder="State" name="state" class="form-control" required>
+                      </div>
+                  </div>
+                  <div class="row">
+                      <div class="form-group col-md-6 mb-3">
+                          <input type="text" placeholder="Pincode" name="pincode" class="form-control" required>
+                      </div>
+                      <div class="form-group col-md-6 mb-3">
+                          <input type="text" placeholder="Phone" name="phone" class="form-control" required>
+                      </div>
+                  </div>
+                  <div class="button-container" style="float: right;">
+                    <button type="submit" class="btn btn-primary mt-3">Submit</button>
+                </div>
+              </form>
+              <div class="button-container" style="float: right;margin-right: 5px;">
+                <button id="cancelButton" type="cancel" class="btn btn-primary mt-3" style="float: right;">Cancel</button>
+            </div>
+          </div>
+      </div>
+  </div>
+  
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <div class="row">
+                <% user.addresses.forEach(address => { %>
+                    <div class="col-md-4">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <% if (address.isDefault) { %>
+                                    <span class="badge bg-primary">Default</span>
+                                <% } %>
+                                <h5 class="card-title"><%= address.name %></h5>
+                                <p class="card-text">
+                                    <%= address.city %><br>
+                                    <%= address.landMark %><br>
+                                    <%= address.state %><br>
+                                    <%= address.pincode %>
+                                </p>
+                                <p class="card-text">Phone: <%= address.phone %></p>
+                                <a href="/edit-address/<%= address._id %>" class="text-primary">Edit</a> |
+                                <a href="#" onclick="deleteAddress('<%= address._id %>')" class="text-danger">Remove</a>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        </div>
+    </div>
+
+
+
+
+        </div>
+
+
+        </div>
+    </div>
+
+    <div class="container" style="margin-bottom: 50px;">
+      <div class="row">
+        <div class="col-md-12">
+            <div class="card mt-5">
+                <div class="card-body">
+                    <h4 class="card-title">Reset Password</h4>
+                    <% if (message) { %>
+                        <div class="alert alert-info"><%= message %></div>
+                    <% } %>
+                    <div class="row">
+                      <div class="col-md-12">
+                          <form id="verifyPasswordForm">
+                              <div class="row">
+                                  <div class="form-group col-md-6 mb-3">
+                                      <input type="password" class="form-control" placeholder="Current Password" id="currentPassword" name="currentPassword" required>
+                                  </div>
+                                  <div class="form-group col-md-6 mb-3">
+                                      <button type="submit" class="btn btn-primary">Verify Current Password</button>
+                                  </div>
+                              </div>
+                          </form>
+                      </div>
+                  </div>
+                    <form id="resetPasswordForm" action="/profile/reset-password" method="POST" style="display: none;">
+                      <div class="row">
+                          <div class="form-group col-md-6 mb-3">
+                              <input type="password" placeholder="New Password" class="form-control" id="newPassword" name="newPassword" required>
+                          </div>
+                          <div class="form-group col-md-6 mb-3">
+                              <input type="password" placeholder="Confirm New Password" class="form-control" id="confirmNewPassword" name="confirmNewPassword" required>
+                          </div>
+                      </div>
+                      <div class="row mt-3">
+                          <div class="col-md-12">
+                              <button type="submit" class="btn btn-primary" style="float: right;">Reset Password</button>
+                          </div>
+                      </div>
+                  </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+  
+
+<script>
+    document.getElementById('verifyPasswordForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const currentPassword = document.getElementById('currentPassword').value;
+
+      fetch('/profile/verify-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ currentPassword })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          document.getElementById('verifyPasswordForm').style.display = 'none';
+          document.getElementById('resetPasswordForm').style.display = 'block';
+        } else {
+          alert('Current password is incorrect');
+        }
+      })
+      .catch(error => console.error('Error:', error));
+    });
+  </script>
+
+<script>
+  document.getElementById('addAddressBtn').addEventListener('click', function() {
+    var addAddressForm = document.getElementById('addAddressForm');
+    if (addAddressForm.style.display === 'none') {
+      addAddressForm.style.display = 'block';
+    } else {
+      addAddressForm.style.display = 'none';
+    }
+    this.style.display = 'none';
+  });
+
+  document.getElementById('cancelButton').addEventListener('click', function() {
+      var showAddressBtn = document.getElementById('addAddressBtn');
+      showAddressBtn.style.display = 'block';
+      var hideAddressForm = document.getElementById('addAddressForm');
+      hideAddressForm.style.display ="none";
+  });
+</script>
+
+  <!-- Start Footer Section -->
+  <%-include("../../views/partials/user/footer")%>
+  <!-- End Footer Section -->
+  <script src="/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/custom.js"></script>
+  <script>
+    document.getElementById('currentPassword').addEventListener('input', function () {
+      document.getElementById('newPasswordFields').style.display = 'block';
+    });
+
+    function deleteAddress(addressId) {
+    fetch(`/delete-address/${addressId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            window.location.href = '/profile';
+        } else {
+            alert('Failed to delete address');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+  </script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/custom.js"></script>
+</body>
+</html>

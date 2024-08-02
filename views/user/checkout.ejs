@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="author" content="Untree.co">
+    <link rel="shortcut icon" href="favicon.png">
+    <meta name="description" content="" />
+    <meta name="keywords" content="bootstrap, bootstrap4" />
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="/css/tiny-slider.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <title>Checkout</title>
+</head>
+
+<body>
+
+    <nav class="custom-navbar navbar navbar-expand-md navbar-dark bg-dark" aria-label="Furni navigation bar">
+        <div class="container">
+            <a class="navbar-brand" href="/">Homey<span>.</span></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsFurni" aria-controls="navbarsFurni" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarsFurni">
+                <ul class="custom-navbar-nav navbar-nav ms-auto mb-2 mb-md-0">
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li><a class="nav-link" href="/shop">All</a></li>
+                    <li><a class="nav-link" href="/logout">Logout</a></li>
+                    
+                </ul>
+                <ul class="custom-navbar-cta navbar-nav mb-2 mb-md-0 ms-5">
+                    <li><a class="nav-link" href="/profile"><img src="/images/user.svg"></a></li>
+                    <li><a class="nav-link" href="/cart"><img src="/images/cart.svg"></a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+            <div class="row">
+                <div class="col-md-6 mb-5 mb-md-0">
+                    <h2 class="h3 mb-3 text-black">Billing Details</h2>
+                    <div class="p-3 p-lg-5 border bg-white">
+                        <div class="form-group">
+                            <label class="text-black">Add/Select address</label>
+                            <button id="addAddressBtn" class="btn btn-primary mb-3">Add Address</button>
+                        </div>
+                        <div id="addAddressForm" style="display: none;">
+                            <form action="/add-address" method="POST">
+                                <div class="form-group row">
+                                    <div class="col-md-6">
+                                        <input type="text" placeholder="Name" name="name" class="form-control" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" placeholder="City" name="city" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-6">
+                                        <input type="text" placeholder="Landmark" name="landMark" class="form-control" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" placeholder="State" name="state" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-6">
+                                        <input type="text" placeholder="Pincode" name="pincode" class="form-control" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" placeholder="Phone" name="phone" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <button type="submit" class="btn btn-primary">Save Address</button>
+                                    <button type="button" id="cancelAddAddress" class="btn btn-secondary">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                        <form action="/place-order" method="POST">
+                            <div class="form-group">
+                                <% user.addresses.forEach((address, index) => { %>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="addressId" id="address<%= index %>" value="<%= address._id %>" <%= index === 0 ? 'checked' : '' %>>
+                                        <label class="form-check-label" for="address<%= index %>">
+                                            <%= address.name %>, <%= address.city %>, <%= address.landMark %>, <%= address.state %>, <%= address.pincode %>, <%= address.phone %>
+                                        </label>
+                                        <a href="/edit-address/<%= address._id %>" class="btn btn-primary btn-sm">Edit</a>
+                                        <a href="#" onclick="deleteAddress('<%= address._id %>')" class="btn btn-danger btn-sm">Remove</a>
+                                    </div>
+                                <% }) %>
+                            </div>
+    
+                            <div class="form-group">
+                                <label for="orderNotes" class="text-black">Order Notes</label>
+                                <textarea name="orderNotes" id="orderNotes" cols="30" rows="5" class="form-control" placeholder="Write your notes here..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-black btn-lg py-3 btn-block">Place Order</button>
+                            </div>
+                        <!-- </form> -->
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 p-lg-5 border bg-white">
+                        <h2 class="h3 mb-3 text-black">Your Order</h2>
+                        <table class="table site-block-order-table mb-5">
+                            <thead>
+                                <th>Product</th>
+                                <th>Total</th>
+                            </thead>
+                            <tbody>
+                                <% cart.forEach(item => { %>
+                                    <tr>
+                                        <td><%= item.productName %> <strong class="mx-2">x</strong> <%= item.quantity %></td>
+                                        <td>₹<%= item.total %></td>
+                                    </tr>
+                                <% }) %>
+                                <tr>
+                                    <td class="text-black font-weight-bold"><strong>Cart Subtotal</strong></td>
+                                    <td class="text-black">₹<%= subtotal %></td>
+                                </tr>
+                                <tr>
+                                    <td>Delivery Fee</td>
+                                    <td>₹<%= deliveryFee %></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-black font-weight-bold"><strong>Order Total</strong></td>
+                                    <td class="text-black font-weight-bold"><strong>₹<%= total %></strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                       
+                        <div class="form-group">
+                            <label for="payment-method" class="text-black">Payment Method</label><br>
+                            <input type="radio" id="cod" name="paymentMethod" value="COD" required>
+                            <label for="cod">Cash on Delivery</label><br>
+                            <input type="radio" id="paypal" name="paymentMethod" value="Paypal" required>
+                            <label for="paypal">Paypal</label>
+                        </div>
+                    </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <%- include('../../views/partials/user/footer') %>
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/tiny-slider.js"></script>
+    <script src="/js/custom.js"></script>
+    <script>
+        document.getElementById('addAddressBtn').addEventListener('click', function () {
+            document.getElementById('addAddressForm').style.display = 'block';
+        });
+
+        document.getElementById('cancelAddAddress').addEventListener('click', function () {
+            document.getElementById('addAddressForm').style.display = 'none';
+        });
+
+        function deleteAddress(addressId) {
+            fetch(`/delete-address/${addressId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert('Failed to delete address');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+
+</html>

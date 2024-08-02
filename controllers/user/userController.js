@@ -3,6 +3,7 @@ const env=require("dotenv").config()
 const nodemailer=require("nodemailer")
 const bcrypt=require("bcrypt")
 const Product=require("../../models/productSchema")
+const Category=require("../../models/categorySchema")
 //load home page
 const loadHomepage=async(req,res)=>{
     try {
@@ -46,7 +47,7 @@ const login=async (req,res)=>{
         if(!passwordMatch){
             return res.render("login",{message:"Incorrect username or password"})
         }
-        req.session.user=findUser
+        req.session.user = findUser._id.toString();
         
         res.redirect("/shop")
     } catch (error) {
@@ -171,21 +172,105 @@ const resendOtp=async(req,res)=>{
     }
 }
 
-// shop page loading
 
-const loadShop=async(req,res)=>{
+
+
+// const loadShop = async (req, res) => {
+//     try {
+//       const categories = await Category.find({ isListed: true });
+//       const categoryFilter = req.query.category;
+//       let products;
+  
+//       if (categoryFilter) {
+//         products = await Product.find({ category: categoryFilter, isBlocked: false })
+//                                 .populate({
+//                                   path: 'category',
+//                                   match: { isListed: true }
+//                                 }).exec();
+//       } else {
+//         products = await Product.find({ isBlocked: false })
+//                                 .populate({
+//                                   path: 'category',
+//                                   match: { isListed: true }
+//                                 }).exec();
+//       }
+  
+//       // Filter out products with unlisted categories
+//       products = products.filter(product => product.category);
+  
+//       return res.render("shop", { products, categories });
+//     } catch (error) {
+//       console.log("shop page is not loading", error);
+//       res.status(500).send("server error");
+//     }
+//   };
+
+const loadShop = async (req, res) => {
     try {
-        const products = await Product.find({isBlocked:false}).exec();
-        return res.render("shop",{products})
-    } catch (error) {
-        console.log("shop page is not loading",error);
-        res.status(500).send("server error")
-    }
-}
+        const categories = await Category.find({ isListed: true });
+        const categoryFilter = req.query.category;
+        const sortOption = req.query.sort || '';
+        let sortCriteria = {};
+        let filterCriteria = { isBlocked: false };
 
+        if (categoryFilter) {
+            filterCriteria.category = categoryFilter;
+        }
+
+        switch (sortOption) {
+            case 'popularity':
+                sortCriteria = { popularity: -1 };
+                break;
+            case 'price-asc':
+                sortCriteria = { salePrice: 1 };
+                break;
+            case 'price-desc':
+                sortCriteria = { salePrice: -1 };
+                break;
+            case 'ratings':
+                sortCriteria = { averageRating: -1 };
+                break;
+            case 'featured':
+                sortCriteria = { isFeatured: -1 };
+                break;
+            case 'new-arrivals':
+                sortCriteria = { createdOn: -1 };
+                break;
+            case 'a-z':
+                sortCriteria = { productName: 1 };
+                break;
+            case 'z-a':
+                sortCriteria = { productName: -1 };
+                break;
+        }
+
+        let products = await Product.find(filterCriteria)
+                                    .populate({
+                                        path: 'category',
+                                        match: { isListed: true }
+                                    })
+                                    .sort(sortCriteria)
+                                    .exec();
+
+        // Filter out products with unlisted categories
+        products = products.filter(product => product.category);
+
+        return res.render('shop', { products, categories, sortOption });
+    } catch (error) {
+        console.log('shop page is not loading', error);
+        res.status(500).send('server error');
+    }
+};
+
+
+
+  
 const getProductDetails=async (req, res) => {
     try {
         const product = await Product.findById(req.params.id).populate('category');
+        if (!product || product.isBlocked) {
+            return res.redirect('/shop');
+          }
         const relatedProducts = await Product.find({ category: product.category, _id: { $ne: product._id } }).limit(5);
 
         res.render('detail', { product, relatedProducts });

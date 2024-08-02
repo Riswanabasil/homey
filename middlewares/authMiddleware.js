@@ -1,4 +1,5 @@
 const User=require("../models/userSchema")
+const Product=require("../models/productSchema")
 const isAdmin=(req,res,next)=>{
     if(req.session.isAdmin){
         return next()
@@ -35,4 +36,23 @@ const isUserBlocked = async (req, res, next) => {
     return res.redirect('/login'); 
 };
 
-module.exports={isAdmin, isUserBlocked,isAuthenticated}
+const checkProductBlocked = async (req, res, next) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (product && product.isBlocked) {
+      return res.redirect('/shop'); 
+    }
+   next()
+  } catch (error) {
+    console.error('Error checking if product is blocked:', error);
+    res.redirect('/shop');
+  }
+}
+
+const ensureAuthenticated = (req, res, next) => {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect('/login');
+};
+module.exports={isAdmin, isUserBlocked,isAuthenticated,checkProductBlocked,ensureAuthenticated}

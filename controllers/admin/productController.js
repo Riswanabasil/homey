@@ -12,11 +12,11 @@ const storage = multer.diskStorage({
 
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 1000000 }, // limit file size to 1MB
+    limits: { fileSize: 1000000 }, 
     fileFilter: (req, file, cb) => {
         checkFileType(file, cb);
     }
-}).array('productImage', 3); // Allow up to 3 images
+}).array('productImage', 3); 
 
 function checkFileType(file, cb) {
     const filetypes = /jpeg|jpg|png|gif|avif|webp/;
@@ -42,7 +42,7 @@ exports.getProductPage = async (req, res) => {
 
 exports.getAddEditProductPage = async (req, res) => {
     try {
-        const categories = await Category.find();
+        const categories = await Category.find({isListed:true});
         const product = req.params.id ? await Product.findById(req.params.id) : null;
         res.render('addEditProduct', { product, categories });
     } catch (error) {

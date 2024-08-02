@@ -2,16 +2,11 @@ const mongoose=require("mongoose")
 const {Schema}=mongoose
 
 const addressSchema= new mongoose.Schema({
-    userId:{
-        type:Schema.Types.ObjectId,
-        ref:"User",
-        required:true
-    },
-    address:[{
-        addressType:{
-            type:String,
-            required:true
-        },
+    // user: { 
+    //     type: mongoose.Schema.Types.ObjectId, 
+    //     ref: 'User',
+    //     required: true 
+    // },
         name:{
             type:String,
             required:true
@@ -36,7 +31,6 @@ const addressSchema= new mongoose.Schema({
             type:String,
             required:true
         }
-    }]
 })
 
 const Address= mongoose.model("Address", addressSchema)

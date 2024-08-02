@@ -1,69 +1,69 @@
-const mongoose=require("mongoose")
-const {schema}=mongoose
+const mongoose = require('mongoose');
+const { v4: uuidv4 } = require('uuid')
+const { Schema } = mongoose;
 
-const orderSchema= new mongoose.Schema({
-    orderid:{
-        type:String,
-        default:()=>uuidv4(),
-        unique:true
+const orderSchema = new mongoose.Schema({
+    orderId: {
+        type: String,
+        default: uuidv4,
+        unique: true
     },
-    orderdItems:[{
-        product:{
-            type: Schema.Types.ObjectId,
-            ref:"Product"
-        },
-        quantity:{
-            type:Number,
-            required:true
-        },
-        price:{
-            type:Number,
-            default:0
-        }
-    }],
-    totalPrice:{
-        type:Number,
-        required:true
-    },
-    discount:{
-        type:Number,
-        default:0
-    },
-    finalAmount:{
-        type:Number,
-        required:true
-    },
-    address:{
+    user: {
         type: Schema.Types.ObjectId,
-        ref:"Address",
-        required:true
+        ref: 'User',
+        required: true
     },
-    payment:{
-        type:String,
-        required:true
+    products: [
+        {
+            productId: {
+                type: Schema.Types.ObjectId,
+                ref: 'Product',
+                required: true
+            },
+            quantity: {
+                type: Number,
+                required: true
+            },
+            price: {
+                type: Number,
+                required: true
+            }
+        }
+    ],
+    address: {
+        type: Schema.Types.ObjectId,
+        ref: 'Address',
+        required: true
     },
-    userId:{
-        type:Schema.Types.ObjectId,
-        ref:"User",
-        required:true
+    subtotal: {
+        type: Number,
+        required: true
     },
-    invoiceDate:{
-        type:Date,
+    deliveryFee: {
+        type: Number,
+        required: true,
+        default: 70
     },
-    status:{
-        type:String,
-        required:trusted
+    total: {
+        type: Number,
+        required: true
     },
-    createdOn:{
-        type:Date,
-        default:Date.now,
-        required:true
+    paymentMethod: {
+        type: String,
+        required: true,
+        enum: ['COD', 'PayPal']
     },
-    couponApplied:{
-        type:Boolean,
-        default:false
+    status: {
+        type: String,
+        default: 'Pending',
+        enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
     }
-})
+});
 
-const Order=mongoose.model("Order",orderSchema)
-module.exports=Order
+const Order = mongoose.model('Order', orderSchema);
+
+module.exports = Order;

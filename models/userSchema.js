@@ -33,9 +33,13 @@ const userSchema= new mongoose.Schema({
         type:Boolean,
         default:false
     },
-    // cart:[{
-    //     type:Schema.Types.ObjectId,
-    //     ref:"Cart"
+    addresses: [{ type: Schema.Types.ObjectId, ref: 'Address' }],
+    cart: [
+        {
+            productId: { type: Schema.Types.ObjectId, ref: 'Product' },
+            quantity: { type: Number, required: true, default: 1 }
+        }
+    ]
     // }],
     // wallet:{
     //     type:Schema.Types.ObjectId,

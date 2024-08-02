@@ -34,16 +34,38 @@
 						<li class="nav-item ">
 							<a class="nav-link" href="/">Home</a>
 						</li>
-						<!-- <li class="active"><a class="nav-link" href="shop.html">Shop</a></li> -->
-						 <!-- <li><a class="nav-link" href="about.html">About us</a></li>
-						<li><a class="nav-link" href="services.html">Services</a></li>
-						<li><a class="nav-link" href="blog.html">Blog</a></li> -->
+						<li><a class="nav-link" href="/shop">All</a></li>
+						<li class="nav-item dropdown">
+							<a class="nav-link dropdown-toggle" href="#" id="categoryDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+							  Categories
+							</a>
+							<ul style="background-color: #3b5d50;" class="dropdown-menu" aria-labelledby="categoryDropdown">
+							  <% categories.forEach(category => { %>
+								<li><a class="dropdown-item" href="/shop?category=<%= category._id %>"><%= category.name %></a></li>
+							  <% }) %>
+							</ul>
+						  </li>
+						  <li class="nav-item dropdown">
+							<a class="nav-link dropdown-toggle" href="#" id="sortDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+								Sort By
+							</a>
+							<ul class="dropdown-menu" style="background-color: #3b5d50;" aria-labelledby="sortDropdown">
+								<li><a class="dropdown-item" href="/shop?sort=popularity">Popularity</a></li>
+								<li><a class="dropdown-item" href="/shop?sort=price-asc">Price: Low to High</a></li>
+								<li><a class="dropdown-item" href="/shop?sort=price-desc">Price: High to Low</a></li>
+								<li><a class="dropdown-item" href="/shop?sort=ratings">Average Ratings</a></li>
+								<li><a class="dropdown-item" href="/shop?sort=featured">Featured</a></li>
+								<li><a class="dropdown-item" href="/shop?sort=new-arrivals">New Arrivals</a></li>
+								<li><a class="dropdown-item" href="/shop?sort=a-z">A - Z</a></li>
+								<li><a class="dropdown-item" href="/shop?sort=z-a">Z - A</a></li>
+							</ul>
+						</li>
 						<li><a class="nav-link" href="/logout">Logout</a></li>
 					</ul>
 
 					<ul class="custom-navbar-cta navbar-nav mb-2 mb-md-0 ms-5">
-						<li><a class="nav-link" href="#"><img src="images/user.svg"></a></li>
-						<li><a class="nav-link" href="cart.html"><img src="images/cart.svg"></a></li>
+						<li><a class="nav-link" href="/profile"><img src="images/user.svg"></a></li>
+						<li><a class="nav-link" href="/cart"><img src="images/cart.svg"></a></li>
 					</ul>
 				</div>
 			</div>
@@ -51,7 +73,9 @@
 		</nav>
 		<!-- End Header/Navigation -->
 
-		
+		<!-- End Header/Navigation -->
+
+
 
 		<div class="untree_co-section product-section before-footer-section">
 		    <div class="container">
