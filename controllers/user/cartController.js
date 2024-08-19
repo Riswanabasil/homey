@@ -1,5 +1,6 @@
 const User=require('../../models/userSchema')
 const Product=require('../../models/productSchema');
+const Coupon=require('../../models/couponSchema')
 const { model } = require('mongoose');
 
 const viewCart = async (req, res) => {
@@ -13,8 +14,7 @@ const viewCart = async (req, res) => {
       });
   
       const total = subtotal;
-  
-      res.render('cart', { cart: user.cart, subtotal, total });
+      res.render('cart', { cart: user.cart, subtotal, total, session: req.session  });
     } catch (error) {
       console.error(error);
       res.status(500).send('Server error');
@@ -68,7 +68,6 @@ const addToCart = async (req, res) => {
 };
 const updateCartQuantity = async (req, res) => {
     try {
-        debugger;
         const userId = req.session.user;
         const productId = req.params.productId;
         const { quantity } = req.body;
@@ -80,7 +79,7 @@ const updateCartQuantity = async (req, res) => {
         if (product.isBlocked) {
             return res.json({ success: false, message: 'Product is blocked and cannot be added to the cart' });
         }
-        if (product.quantity < quantity) {
+        if (product.quantity < 1) {
             return res.json({ success: false, message: 'Not enough stock available' });
         }
         const user = await User.findById(userId);
@@ -95,6 +94,7 @@ const updateCartQuantity = async (req, res) => {
             // if (quantity < 1) {
             //     return res.json({ success: false, message: 'Not enough stock available' });
             // }
+            
             user.cart.push({ productId, quantity });
         }
 
@@ -123,4 +123,48 @@ const removeFromCart = async (req, res) => {
     }
 };
 
-module.exports={viewCart,addToCart,updateCartQuantity,removeFromCart}
+const applyCoupon=async(req,res)=>{
+    try {
+        const {couponCode}=req.body
+        const userId=req.session.user
+        const coupon= await Coupon.findOne({name:couponCode,expiry:{$gte:new Date()}})
+
+        if (!coupon){
+            return res.status(400).json({success:false, message:'Invalid or Expired coupon'})
+        }
+
+        const user= await User.findById(userId).populate('cart.productId')
+        const subtotal=user.cart.reduce((sum,item)=>sum+item.quantity*item.productId.salePrice,0)
+        const discount=coupon.value
+        const total=subtotal-discount
+
+        req.session.coupon = {
+            code: coupon.name,
+            discount,
+            total,
+        };
+
+        return res.status(200).json({success:true, discount,total})
+    } catch (error) {
+        console.error('Error applying coupon',error)
+        return res.status(500).json({success:false, message:'Server error'})
+    }
+}
+const removeCoupon=async (req, res) => {
+    try {
+        // Remove the coupon from the session or database
+        delete req.session.coupon;
+
+        // Recalculate the cart total without the coupon
+        const userId = req.session.user;
+        const user = await User.findById(userId).populate('cart.productId');
+        const subtotal = user.cart.reduce((sum, item) => sum + item.quantity * item.productId.salePrice, 0);
+        const total = subtotal;
+
+        return res.status(200).json({ success: true, total });
+    } catch (error) {
+        console.error('Error removing coupon:', error);
+        return res.status(500).json({ success: false, message: 'Server error.' });
+    }
+};
+module.exports={viewCart,addToCart,updateCartQuantity,removeFromCart,applyCoupon, removeCoupon}

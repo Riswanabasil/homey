@@ -583,14 +583,14 @@ a {
       border-radius: 10px !important; }
   .footer-section .sofa-img {
     position: absolute;
-    top: -200px;
+    top: -65px;
     z-index: 1;
     right: 0; }
     .footer-section .sofa-img img 
     {
-      max-width: 380px; 
-      margin-top: 100px;
-      height: auto;
+      max-width: 60% !important; 
+      max-height: 50% !important;
+      float: right;
     }
   .footer-section .links-wrap {
     margin-top: 0px; }

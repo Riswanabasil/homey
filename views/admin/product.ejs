@@ -22,7 +22,7 @@
         }
         .sidebar {
             width: 200px;
-            height: 275vh;
+            height: 115vh;
             padding: 1rem;
             background-color: #3b5d50;
             box-sizing: border-box;
@@ -60,6 +60,19 @@
             height: 50px;
             object-fit: cover;
         }
+        .pagination {
+            justify-content: center;
+        }
+        .page-link.green-active {
+    background-color: green;
+    color: #3b5d50;
+}
+
+.page-link.green-active:hover {
+    background-color: darkgreen;
+}
+
+
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
@@ -98,7 +111,13 @@
                     <a class="nav-link" href="/admin/dashboard">Dashboard</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="/admin/orders">Orders</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="/admin/category">Category</a>
+                </li>
+                <li class="nav-item" >
+                    <a class="nav-link" href="/admin/coupons">Coupon</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/admin/product">Product</a>
@@ -109,62 +128,85 @@
             </ul>
         </div>
 
-        <main class="mt-5 pt-3">
+        <main class="mt-1 pt-3">
             <div class="container-fluid">
-              <div class="row">
-                <div class="col-md-12"> 
-                    <div class="container mt-5">
-                        <h2>Product Management</h2>
-                        <a href="/admin/product/add" class="btn btn-primary mb-3">Add Product</a>
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Product Image</th>
-                                    <th>Product Name</th>
-                                    <th>Description</th>
-                                    <th>Category</th>
-                                    <th>Regular Price</th>
-                                    <th>Sale Price</th>
-                                    <th>Offer</th>
-                                    <th>Quantity</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <% products.forEach(product => { %>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="container mt-5">
+                            <h2>Product Management</h2>
+                            <div class="d-flex justify-content-between mb-3">
+                            <a href="/admin/product/add"  class= "btn btn-custom text-center">Add Product</a>
+
+                            <form class="form-inline mb-3" action="/admin/product" method="GET">
+                                <input class="form-control mr-sm-2" type="search" name="search" placeholder="Search" aria-label="Search" value="<%= search || '' %>">
+                                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                            </form>
+                            </div>
+                            <table class="table table-bordered mt-2">
+                                <thead>
                                     <tr>
-                                        <td>
-                                            <% if (product.productImage && product.productImage.length > 0) { %>
-                                                <img src="<%= product.productImage[0] %>" alt="Product Image" style="width: 100px; height: auto;">
-                                            <% } else { %>
-                                                No Image
-                                            <% } %>
-                                        </td>
-                                        <td><%= product.productName %></td>
-                                        <td><%= product.description %></td>
-                                        <td><%= product.category.name %></td>
-                                        <td><%= product.regularPrice %></td>
-                                        <td><%= product.salePrice %></td>
-                                        <td><%= product.productOffer %></td>
-                                        <td><%= product.quantity %></td>
-                                        <td>
-                                            <a href="/admin/product/edit/<%= product._id %>" class="btn btn-warning">Edit</a>
-                                            <form action="/admin/product/toggle/<%= product._id %>" method="POST" style="display: inline;">
-                                                <button type="submit" class="btn <%= product.isBlocked ? 'btn-success' : 'btn-danger' %>">
-                                                    <%= product.isBlocked ? 'Unblock' : 'Block' %>
-                                                </button>
-                                            </form>
-                                        </td>
+                                        <th>Product Image</th>
+                                        <th>Product Name</th>
+                                        <th>Category</th>
+                                        <th>Regular Price</th>
+                                        <th>Sale Price</th>
+                                        <th>Offer</th>
+                                        <th>Quantity</th>
+                                        <th>Actions</th>
                                     </tr>
-                                <% }) %>
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    <% products.forEach(product => { %>
+                                        <tr>
+                                            <td>
+                                                <% if (product.productImage && product.productImage.length > 0) { %>
+                                                    <img src="<%= product.productImage[0] %>" alt="Product Image" style="width: 100px; height: auto;">
+                                                <% } else { %>
+                                                    No Image
+                                                <% } %>
+                                            </td>
+                                            <td><%= product.productName %></td>
+                                            <td><%= product.category.name %></td>
+                                            <td><%= product.regularPrice %></td>
+                                            <td><%= product.salePrice %></td>
+                                            <td><%= product.productOffer %></td>
+                                            <td><%= product.quantity %></td>
+                                            <td>
+                                                <a href="/admin/product/edit/<%= product._id %>" class="btn btn-warning">Edit</a>
+                                                <form action="/admin/product/toggle/<%= product._id %>" method="POST" style="display: inline;">
+                                                    <button type="submit" class="btn <%= product.isBlocked ? 'btn-success' : 'btn-danger' %>">
+                                                        <%= product.isBlocked ? 'List' : 'Unlist' %>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                            <!-- <nav aria-label="Page navigation">
+                                <ul class="pagination">
+                                    <% for(let i = 1; i <= totalPages; i++) { %>
+                                        <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                                            <a class="page-link"  href="/admin/product?page=<%= i %>&limit=<%= limit %>"><%= i %></a>
+                                        </li>
+                                    <% } %>
+                                </ul>
+                            </nav> -->
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination">
+                                    <% for(let i = 1; i <= totalPages; i++) { %>
+                                        <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                                            <a class="page-link <%= i === currentPage ? 'green-active' : '' %>" href="/admin/product?page=<%= i %>&limit=<%= limit %>"><%= i %></a>
+                                        </li>
+                                    <% } %>
+                                </ul>
+                            </nav>
+                            
+                        </div>
                     </div>
-                
-    </div>
-    </div>
-    </div>
-    </main>
+                </div>
+            </div>
+        </main>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
@@ -172,3 +214,4 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
+

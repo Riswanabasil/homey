@@ -6,6 +6,9 @@ const { isUserBlocked,isAuthenticated,checkProductBlocked,ensureAuthenticated }=
 const profileController=require("../controllers/user/profileController")
 const cartController=require('../controllers/user/cartController')
 const checkoutController=require('../controllers/user/checkoutController')
+const ordersController=require('../controllers/user/ordersController')
+const forgotPasswordController = require('../controllers/user/forgotPasswordController')
+const wishController=require('../controllers/user/wishController')
 
 router.use(isUserBlocked)
 router.get("/",userController.loadHomepage)
@@ -39,6 +42,11 @@ router.post('/add-address',profileController.addAddress)
 router.get('/edit-address/:id', profileController.loadEditAddress);
 router.post('/edit-address/:id', profileController.editAddress);
 router.delete('/delete-address/:id', profileController.removeAddress);
+router.get('/orders', isAuthenticated, ordersController.getOrderHistory);
+router.get('/orders/view/:orderId', ordersController.viewOrder)
+router.post('/orders/cancel/:id', isAuthenticated, ordersController.cancelOrder);
+router.post('/orders/return/:id', isAuthenticated, ordersController.returnOrder);
+
 
 router.get('/cart', isAuthenticated, cartController.viewCart);
 router.get('/add-to-cart/:productId', isAuthenticated, cartController.addToCart);
@@ -48,6 +56,22 @@ router.post('/remove-from-cart/:productId', isAuthenticated, cartController.remo
 router.get('/checkout', isAuthenticated, checkoutController.loadCheckout);
 router.post('/place-order', isAuthenticated, checkoutController.placeOrder)
 router.get('/thankyou', isAuthenticated, checkoutController.loadThankyou);
+router.post('/create-razorpay-order', isAuthenticated, checkoutController.createRazorpayOrder);
 
+router.get('/edit-address1/:id', profileController.loadEditAddress1);
+router.post('/edit-address1/:id', profileController.editAddress1);
 
+router.get('/forgot-password', forgotPasswordController.loadForgotPasswordPage);
+router.post('/send-otp', forgotPasswordController.sendResetOtp)
+router.post('/verify-otp1', forgotPasswordController.verifyResetOtp)
+router.get('/reset-password', forgotPasswordController.loadResetPassword)
+router.post('/reset-password', forgotPasswordController.resetPassword);
+
+router.post('/cart/apply-coupon', cartController.applyCoupon)
+router.post('/cart/remove-coupon', cartController.removeCoupon)
+
+router.post('/wishlist/add/:productId', isAuthenticated, wishController.addToWishlist);
+router.get('/wishlist', isAuthenticated, wishController.viewWishlist);
+router.post('/wishlist/remove/:productId',wishController.removeProduct)
+router.post('/cart/add/:productId',wishController.addCart)
 module.exports=router

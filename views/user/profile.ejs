@@ -12,6 +12,13 @@
   <link href="/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
   <link href="/css/style.css" rel="stylesheet">
+  <!-- <style>
+    .error-message {
+            color: #c23321;
+            font-size: .75rem;
+            display: none;
+        }
+  </style> -->
 </head>
 
 <body>
@@ -31,7 +38,12 @@
                     <a class="nav-link" href="/">Home</a>
                 </li>
                 <li><a class="nav-link" href="/shop">Shop</a></li>
-                
+                <li class="nav-item">
+                    <a class="nav-link" href="/orders">Orders</a>
+                  </li>
+                  <li class="nav-item ">
+                    <a class="nav-link" href="/wishlist">Wishlist</a>
+                </li>
                 <li><a class="nav-link" href="/logout">Logout</a></li>
             </ul>
 
@@ -63,29 +75,36 @@
                   <div class="row">
                       <div class="form-group col-md-6 mb-3">
                           <input type="text" placeholder="Name" name="name" class="form-control" required>
+                          <div class="error-message" id="name-error"></div>
                       </div>
                       <div class="form-group col-md-6 mb-3">
                           <input type="text" placeholder="City" name="city" class="form-control" required>
+                          <div class="error-message" id="city-error"></div>
                       </div>
                   </div>
                   <div class="row">
                       <div class="form-group col-md-6 mb-3">
                           <input type="text" placeholder="Landmark" name="landMark" class="form-control" required>
+                          <div class="error-message" id="landmark-error"></div>
                       </div>
                       <div class="form-group col-md-6 mb-3">
                           <input type="text" placeholder="State" name="state" class="form-control" required>
+                          <div class="error-message" id="state-error"></div>
                       </div>
                   </div>
                   <div class="row">
                       <div class="form-group col-md-6 mb-3">
                           <input type="text" placeholder="Pincode" name="pincode" class="form-control" required>
+                          <div class="error-message" id="pincode-error"></div>
                       </div>
                       <div class="form-group col-md-6 mb-3">
                           <input type="text" placeholder="Phone" name="phone" class="form-control" required>
+                          <div class="error-message" id="phone-error"></div>
                       </div>
                   </div>
                   <div class="button-container" style="float: right;">
                     <button type="submit" class="btn btn-primary mt-3">Submit</button>
+
                 </div>
               </form>
               <div class="button-container" style="float: right;margin-right: 5px;">
@@ -180,6 +199,71 @@
   
 
 <script>
+
+ // Validation function
+ function validateAddressForm() {
+        let isValid = true;
+
+        // Clear previous error messages
+        document.querySelectorAll('.error-message').forEach(function(elem) {
+            elem.innerHTML = '';
+        });
+
+        // Name validation
+        const nameInput = document.querySelector('input[name="name"]');
+        if (nameInput.value.trim() === '') {
+            document.getElementById('name-error').innerHTML = 'Name is required.';
+            isValid = false;
+        }
+
+        // City validation
+        const cityInput = document.querySelector('input[name="city"]');
+        if (cityInput.value.trim() === '') {
+            document.getElementById('city-error').innerHTML = 'City is required.';
+            isValid = false;
+        }
+
+        // Landmark validation
+        const landmarkInput = document.querySelector('input[name="landMark"]');
+        if (landmarkInput.value.trim() === '') {
+            document.getElementById('landmark-error').innerHTML = 'Landmark is required.';
+            isValid = false;
+        }
+
+        // State validation
+        const stateInput = document.querySelector('input[name="state"]');
+        if (stateInput.value.trim() === '') {
+            document.getElementById('state-error').innerHTML = 'State is required.';
+            isValid = false;
+        }
+
+        // Pincode validation
+        const pincodeInput = document.querySelector('input[name="pincode"]');
+        const pincodePattern = /^[0-9]{6}$/;
+        if (!pincodePattern.test(pincodeInput.value.trim())) {
+            document.getElementById('pincode-error').innerHTML = 'Pincode must be a 6-digit number.';
+            isValid = false;
+        }
+
+        // Phone validation
+        const phoneInput = document.querySelector('input[name="phone"]');
+        const phonePattern = /^[0-9]{10}$/;
+        if (!phonePattern.test(phoneInput.value.trim())) {
+            document.getElementById('phone-error').innerHTML = 'Phone number must be a 10-digit number.';
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    // Bind validation to form submit event
+    document.getElementById('addAddressForm').addEventListener('submit', function(e) {
+        if (!validateAddressForm()) {
+            e.preventDefault(); // Prevent form submission if validation fails
+        }
+    });
+
+
     document.getElementById('verifyPasswordForm').addEventListener('submit', function (e) {
       e.preventDefault();
       const currentPassword = document.getElementById('currentPassword').value;

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coupon Management | Homey</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .navbar {
+            background-color: #3b5d50;
+        }
+
+        .navbar-brand,
+        .nav-link,
+        .logout-btn {
+            color: white !important;
+        }
+
+        .sidebar {
+            background-color: #3b5d50;
+            height: 100vh;
+            padding-top: 10px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 200px;
+            transition: all 0.3s;
+        }
+
+        .sidebar .brand {
+            font-size: 1.5rem;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            font-weight: bold;
+        }
+
+        .sidebar a {
+            color: white;
+            display: block;
+            padding: 10px 20px;
+            text-decoration: none;
+        }
+
+        .sidebar a:hover {
+            background-color: #2f4a41;
+        }
+
+        .content {
+            margin-left: 200px;
+            padding: 20px;
+        }
+
+        .logout-btn {
+            color: white !important;
+        }
+
+        .btn-custom {
+            background-color: #3b5d50;
+            color: white;
+            font-weight: bold;
+            border: none;
+            padding: 10px 0;
+        }
+
+        .btn-custom:hover {
+            background-color: #2f4a41;
+        }
+
+        .form-edit {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                overflow: hidden;
+            }
+
+            .sidebar.active {
+                width: 200px;
+            }
+
+            .content {
+                margin-left: 0;
+            }
+
+            .content.active {
+                margin-left: 200px;
+            }
+
+            .navbar .navbar-toggler {
+                border-color: white;
+            }
+
+            .navbar .navbar-toggler-icon {
+                background-color: white;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <a class="navbar-brand" href="#">Homey</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link logout-btn" href="/admin/logout">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="sidebar">
+        <div class="brand">Homey</div>
+        <a href="/admin/dashboard">Dashboard</a>
+        <a href="/admin/orders">Orders</a>
+        <a href="/admin/category">Category</a>
+        <a href="/admin/product">Product</a>
+        <a href="/admin/user">User</a>
+        <a href="/admin/coupons">Coupon</a>
+    </div>
+
+    <div class="content">
+        <h2>Coupons</h2>
+        <% if (message.length > 0) { %>
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: '<%= message %>',
+                showConfirmButton: false,
+                timer: 1500
+            });
+        </script>
+        <% } %>
+        <a href="/admin/coupons/add" class="btn btn-success mb-3">Add Coupon</a>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Sl No.</th>
+                    <th>Name</th>
+                    <th>Expiry</th>
+                    <th>Value</th>
+                    <th>Minimum Purchase</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% coupons.forEach((coupon, index) => { %>
+                <tr>
+                    <td><%= index + 1 %></td>
+                    <td><%= coupon.name %></td>
+                    <td><%= coupon.expiry.toISOString().split('T')[0] %></td>
+                    <td><%= coupon.value %></td>
+                    <td><%= coupon.minimumPurchase %></td>
+                    <td>
+                        <a href="/admin/coupons/edit/<%= coupon._id %>" class="btn btn-warning btn-sm">Edit</a>
+                        <form id="deleteForm-<%= coupon._id %>" action="/admin/coupons/delete/<%= coupon._id %>" method="POST" style="display:inline;" onsubmit="return confirmDelete('<%= coupon._id %>');">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                        
+                    </td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+    <script>
+        function confirmDelete(couponId) {
+            event.preventDefault();
+    
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(`deleteForm-${couponId}`).submit();
+                }
+            });
+        }
+    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>

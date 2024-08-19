@@ -2,6 +2,7 @@ const Product = require('../../models/productSchema');
 const Category = require('../../models/categorySchema');
 const multer = require('multer');
 const path = require('path');
+const { query } = require('express');
 
 const storage = multer.diskStorage({
     destination: './public/uploads/',
@@ -30,15 +31,42 @@ function checkFileType(file, cb) {
     }
 }
 
+// exports.getProductPage = async (req, res) => {
+//     try {
+//         const products = await Product.find().populate('category');
+//         res.render('product', { products });
+//     } catch (error) {
+//         console.error('Error fetching products:', error);
+//         res.redirect('/admin/dashboard');
+//     }
+// };
+
 exports.getProductPage = async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const search = req.query.search || ''
+
     try {
-        const products = await Product.find().populate('category');
-        res.render('product', { products });
+        const query = search ? { productName: { $regex: search, $options: 'i' } } : {};
+        const count = await Product.countDocuments(query);
+        const products = await Product.find(query)
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .populate('category');
+
+        res.render('product', {
+            products,
+            currentPage: page,
+            totalPages: Math.ceil(count / limit),
+            limit,
+            search
+        });
     } catch (error) {
         console.error('Error fetching products:', error);
         res.redirect('/admin/dashboard');
     }
 };
+
 
 exports.getAddEditProductPage = async (req, res) => {
     try {
@@ -91,8 +119,16 @@ exports.editProduct = (req, res) => {
         } else {
             try {
                 const { productName, description, author, category, regularPrice, salePrice, productOffer, quantity } = req.body;
-                const productImages = req.files.length ? req.files.map(file => '/uploads/' + file.filename) : undefined;
+                // const productImages = req.files.length ? req.files.map(file => '/uploads/' + file.filename) : undefined;
+
                 const product = await Product.findById(req.params.id);
+
+                if (!product) {
+                    return res.redirect('/admin/product');
+                }
+
+                // If new images are uploaded, use them. Otherwise, keep the existing images.
+                const productImages = req.files.length ? req.files.map(file => '/uploads/' + file.filename) : product.productImage;
 
                 product.productName = productName;
                 product.description = description;
@@ -102,7 +138,8 @@ exports.editProduct = (req, res) => {
                 product.salePrice = salePrice;
                 product.productOffer = productOffer;
                 product.quantity = quantity;
-                if (productImages) product.productImage = productImages;
+                // if (productImages) product.productImage = productImages;
+                product.productImage = productImages;
 
 
                 await product.save();

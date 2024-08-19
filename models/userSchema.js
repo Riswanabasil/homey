@@ -39,6 +39,11 @@ const userSchema= new mongoose.Schema({
             productId: { type: Schema.Types.ObjectId, ref: 'Product' },
             quantity: { type: Number, required: true, default: 1 }
         }
+    ],
+    wishlist: [
+        {
+            productId: { type: Schema.Types.ObjectId, ref: 'Product' }
+        }
     ]
     // }],
     // wallet:{
@@ -46,14 +51,6 @@ const userSchema= new mongoose.Schema({
     //     ref:"Wallet",
     //     default:0
     // },
-    // whishlist:[{
-    //     type:Schema.Types.ObjectId,
-    //     ref:"Whishlist"
-    // }],
-    // orderHistory:[{
-    //     type:Schema.Types.ObjectId,
-    //     ref:"Order"
-    // }],
     // createdOn:{
     //     type:Date,
     //     default:Date.now

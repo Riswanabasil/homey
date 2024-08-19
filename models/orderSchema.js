@@ -44,6 +44,10 @@ const orderSchema = new mongoose.Schema({
         required: true,
         default: 70
     },
+    discount: {
+        type: Number,
+        default: 0
+    },
     total: {
         type: Number,
         required: true
@@ -51,13 +55,33 @@ const orderSchema = new mongoose.Schema({
     paymentMethod: {
         type: String,
         required: true,
-        enum: ['COD', 'PayPal']
+        enum: ['COD', 'Razorpay']
+    },
+    razorpay: {
+        orderId: {
+            type: String,
+            required: function() { return this.paymentMethod === 'Razorpay'; }
+        },
+        paymentId: {
+            type: String,
+            required: function() { return this.paymentMethod === 'Razorpay'; }
+        },
+        signature: {
+            type: String,
+            required: function() { return this.paymentMethod === 'Razorpay'; }
+        }
     },
     status: {
         type: String,
-        default: 'Pending',
-        enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
+        default: 'Order Placed',
+        enum: ['Order Placed', 'Shipped', 'Delivered', 'Cancelled','Returned']
     },
+    statusHistory: [
+        {
+            status: { type: String, enum: ['Order Placed', 'Shipped', 'Delivered', 'Cancelled', 'Returned'] },
+            timestamp: { type: Date, default: Date.now }
+        }
+    ],
     createdAt: {
         type: Date,
         default: Date.now

@@ -174,47 +174,24 @@ const resendOtp=async(req,res)=>{
 
 
 
-
-// const loadShop = async (req, res) => {
-//     try {
-//       const categories = await Category.find({ isListed: true });
-//       const categoryFilter = req.query.category;
-//       let products;
-  
-//       if (categoryFilter) {
-//         products = await Product.find({ category: categoryFilter, isBlocked: false })
-//                                 .populate({
-//                                   path: 'category',
-//                                   match: { isListed: true }
-//                                 }).exec();
-//       } else {
-//         products = await Product.find({ isBlocked: false })
-//                                 .populate({
-//                                   path: 'category',
-//                                   match: { isListed: true }
-//                                 }).exec();
-//       }
-  
-//       // Filter out products with unlisted categories
-//       products = products.filter(product => product.category);
-  
-//       return res.render("shop", { products, categories });
-//     } catch (error) {
-//       console.log("shop page is not loading", error);
-//       res.status(500).send("server error");
-//     }
-//   };
-
 const loadShop = async (req, res) => {
     try {
         const categories = await Category.find({ isListed: true });
         const categoryFilter = req.query.category;
         const sortOption = req.query.sort || '';
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 4;
+        const searchTerm = req.query.search || '';
+
         let sortCriteria = {};
         let filterCriteria = { isBlocked: false };
 
         if (categoryFilter) {
             filterCriteria.category = categoryFilter;
+        }
+
+        if (searchTerm) {
+            filterCriteria.productName = { $regex: searchTerm, $options: 'i' };
         }
 
         switch (sortOption) {
@@ -244,24 +221,34 @@ const loadShop = async (req, res) => {
                 break;
         }
 
+        const count = await Product.countDocuments(filterCriteria);
         let products = await Product.find(filterCriteria)
                                     .populate({
                                         path: 'category',
                                         match: { isListed: true }
                                     })
                                     .sort(sortCriteria)
+                                    .skip((page - 1) * limit)
+                                    .limit(limit)
                                     .exec();
 
         // Filter out products with unlisted categories
         products = products.filter(product => product.category);
 
-        return res.render('shop', { products, categories, sortOption });
+        return res.render('shop', { 
+            products, 
+            categories, 
+            sortOption, 
+            currentPage: page, 
+            totalPages: Math.ceil(count / limit),
+            categoryFilter,
+            searchTerm
+        });
     } catch (error) {
         console.log('shop page is not loading', error);
         res.status(500).send('server error');
     }
 };
-
 
 
   
@@ -272,8 +259,8 @@ const getProductDetails=async (req, res) => {
             return res.redirect('/shop');
           }
         const relatedProducts = await Product.find({ category: product.category, _id: { $ne: product._id } }).limit(5);
-
-        res.render('detail', { product, relatedProducts });
+        const user= await User.findById(req.session.user).populate('wishlist')
+        res.render('detail', { product, relatedProducts,user });
     } catch (error) {
         console.error('Error fetching product detail:', error);
         res.redirect('/');
@@ -291,4 +278,5 @@ const logout=(req,res)=>{
         res.redirect('/');
     });
 }
-module.exports={loadHomepage, loadSignup, signup,verifyotp,resendOtp,loadShop,loadLogin,login,getProductDetails,logout}
+module.exports={loadHomepage, loadSignup, signup,verifyotp,resendOtp,loadShop,loadLogin,login,getProductDetails,logout,generateOtp, sendVerificationEmail, securePassword}
+

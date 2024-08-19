@@ -93,7 +93,10 @@ const loadEditProfile = async (req, res) => {
         user.addresses.push(address._id);
         await user.save();
 
-        res.redirect('/profile');
+        // res.redirect('/profile');
+
+        const referrer = req.query.referrer || 'profile';
+        res.redirect(`/${referrer}`);
     } catch (error) {
         console.error("Error in addAddress:", error);
         res.status(500).send('Server error');
@@ -112,9 +115,11 @@ const editAddress = async (req, res) => {
   }
 };
 
+
 const loadEditAddress = async (req, res) => {
   try {
     const address = await Address.findById(req.params.id);
+   
     res.render('editAddress', { address });
   } catch (error) {
     console.error(error);
@@ -134,4 +139,35 @@ const removeAddress = async (req, res) => {
     res.status(500).send('Server error');
   }
 };
-module.exports={loadProfile, loadEditProfile, updateProfile,verifyPassword,resetPassword,addAddress,editAddress,loadEditAddress,removeAddress}
+const loadEditAddress1 = async (req, res) => {
+  try {
+    const address = await Address.findById(req.params.id);
+   
+    res.render('editAddress1', { address });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+};
+const editAddress1 = async (req, res) => {
+  try {
+    const addressId = req.params.id;
+    const updatedData = req.body;
+    await Address.findByIdAndUpdate(addressId, updatedData);
+    res.redirect('/checkout');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+};
+
+module.exports={loadProfile,
+   loadEditProfile,
+    updateProfile,
+    verifyPassword,
+    resetPassword,
+    addAddress,editAddress,
+    loadEditAddress,
+    removeAddress,
+    loadEditAddress1,
+    editAddress1}

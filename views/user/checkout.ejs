@@ -40,14 +40,14 @@
 
             <div class="row">
                 <div class="col-md-6 mb-5 mb-md-0">
-                    <h2 class="h3 mb-3 text-black">Billing Details</h2>
                     <div class="p-3 p-lg-5 border bg-white">
+                        <h2 class="h3 mb-3 text-black">Billing Details</h2>
                         <div class="form-group">
                             <label class="text-black">Add/Select address</label>
                             <button id="addAddressBtn" class="btn btn-primary mb-3">Add Address</button>
                         </div>
                         <div id="addAddressForm" style="display: none;">
-                            <form action="/add-address" method="POST">
+                            <form action="/add-address?referrer=checkout" method="POST">
                                 <div class="form-group row">
                                     <div class="col-md-6">
                                         <input type="text" placeholder="Name" name="name" class="form-control" required>
@@ -57,49 +57,41 @@
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <div class="col-md-6">
+                                    <div class="col-md-6 mt-2">
                                         <input type="text" placeholder="Landmark" name="landMark" class="form-control" required>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-6 mt-2">
                                         <input type="text" placeholder="State" name="state" class="form-control" required>
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <div class="col-md-6">
+                                    <div class="col-md-6 mt-2">
                                         <input type="text" placeholder="Pincode" name="pincode" class="form-control" required>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-6 mt-2">
                                         <input type="text" placeholder="Phone" name="phone" class="form-control" required>
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <button type="submit" class="btn btn-primary">Save Address</button>
-                                    <button type="button" id="cancelAddAddress" class="btn btn-secondary">Cancel</button>
+                                    <button type="submit" class="btn btn-primary mt-2">Save Address</button>
+                                    <button type="button" id="cancelAddAddress" class="btn btn-secondary mt-2">Cancel</button>
                                 </div>
                             </form>
                         </div>
-                        <form action="/place-order" method="POST">
+                        <form action="/place-order" id="placeOrderForm" method="POST">
                             <div class="form-group">
                                 <% user.addresses.forEach((address, index) => { %>
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" name="addressId" id="address<%= index %>" value="<%= address._id %>" <%= index === 0 ? 'checked' : '' %>>
                                         <label class="form-check-label" for="address<%= index %>">
-                                            <%= address.name %>, <%= address.city %>, <%= address.landMark %>, <%= address.state %>, <%= address.pincode %>, <%= address.phone %>
+                                            <%= address.name %><br> <%= address.city %><br> <%= address.landMark %><br> <%= address.state %>, <%= address.pincode %><br><%= address.phone %>
                                         </label>
-                                        <a href="/edit-address/<%= address._id %>" class="btn btn-primary btn-sm">Edit</a>
-                                        <a href="#" onclick="deleteAddress('<%= address._id %>')" class="btn btn-danger btn-sm">Remove</a>
+                                        <a href="/edit-address1/<%= address._id %>" >Edit</a>
+                                        
+                                        <a href="#" onclick="deleteAddress('<%= address._id %>')" >Remove</a>
                                     </div>
                                 <% }) %>
                             </div>
-    
-                            <div class="form-group">
-                                <label for="orderNotes" class="text-black">Order Notes</label>
-                                <textarea name="orderNotes" id="orderNotes" cols="30" rows="5" class="form-control" placeholder="Write your notes here..."></textarea>
-                            </div>
-                            <div class="form-group">
-                                <button type="submit" class="btn btn-black btn-lg py-3 btn-block">Place Order</button>
-                            </div>
-                        <!-- </form> -->
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -121,6 +113,12 @@
                                     <td class="text-black font-weight-bold"><strong>Cart Subtotal</strong></td>
                                     <td class="text-black">₹<%= subtotal %></td>
                                 </tr>
+                                <% if (discount > 0) { %>
+                                    <tr>
+                                        <td>Discount</td>
+                                        <td class="text-black text-success">-₹<%= discount %></td>
+                                    </tr>
+                                    <% } %>
                                 <tr>
                                     <td>Delivery Fee</td>
                                     <td>₹<%= deliveryFee %></td>
@@ -136,8 +134,11 @@
                             <label for="payment-method" class="text-black">Payment Method</label><br>
                             <input type="radio" id="cod" name="paymentMethod" value="COD" required>
                             <label for="cod">Cash on Delivery</label><br>
-                            <input type="radio" id="paypal" name="paymentMethod" value="Paypal" required>
-                            <label for="paypal">Paypal</label>
+                            <input type="radio" id="razorpay" name="paymentMethod" value="Razorpay" required>
+                            <label for="razorpay">Online payment</label>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-black btn-lg py-3 btn-block mt-2">Place Order</button>
                         </div>
                     </form>
                     </div>
@@ -149,6 +150,121 @@
     <script src="/js/bootstrap.bundle.min.js"></script>
     <script src="/js/tiny-slider.js"></script>
     <script src="/js/custom.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    
+    <script>
+
+document.getElementById('placeOrderForm').addEventListener('submit',async function(event) {
+    event.preventDefault();
+
+    const selectedAddress = document.querySelector('input[name="addressId"]:checked');
+
+    if (!selectedAddress) {
+        alert('Please select an address before placing your order.');
+        return; 
+    }
+    
+    const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+
+    if (paymentMethod === 'Razorpay'){
+        try {
+            const response = await fetch('/create-razorpay-order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        amount:`<%= total %>`
+                        
+                    })
+                });
+                const order = await response.json();
+
+               if (!order.success) {
+                    alert('Failed to create Razorpay order');
+                   return;
+                }
+                const options = {
+                    "key": "<%= process.env.RAZORPAY_ID_KEY %>",
+                    "amount": order.amount,
+                    "currency": "INR",
+                    "name": "Homey",
+                    "description": "Order Payment",
+                    "order_id": order.id,
+                    "handler": function (response) {
+                        // Handle payment success
+                        fetch('/place-order', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_signature: response.razorpay_signature,
+                                addressId: document.querySelector('input[name="addressId"]:checked').value,
+                                paymentMethod: 'Razorpay'
+                            })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                window.location.href = '/thankyou';
+                            } else {
+                                alert('Payment failed, please try again.');
+                            }
+                        })
+                        .catch(err => console.error('Error:', err));
+                    },
+                    "prefill": {
+                        "name": "<%= user.name %>",
+                        "email": "<%= user.email %>",
+                        "contact": "<%= user.phone %>"
+                    },
+                    "theme": {
+                        "color": "#3399cc"
+                    }
+                };
+
+                const rzp1 = new Razorpay(options);
+                rzp1.open();
+        } catch (error) {
+            console.error('Error creating Razorpay order:', error);
+        }
+    }else {
+            this.submit(); // Continue with COD
+        }
+    // Proceed with the form submission
+    // this.submit();
+});
+
+
+function deleteAddress(addressId) {
+    if (confirm('Are you sure you want to remove this address?')) {
+        // Perform the delete action, e.g., making an AJAX call to remove the address
+        fetch(`/delete-address/${addressId}`, {
+            method: 'DELETE',
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Address removed successfully.');
+                // Optionally, remove the address element from the DOM
+                document.getElementById(`address${addressId}`).closest('.form-check').remove();
+            } else {
+                alert('Failed to remove address.');
+            }
+        })
+        .catch(error => {
+            console.error('Error removing address:', error);
+            alert('An error occurred. Please try again.');
+        });
+    }
+}
+
+
+
+    </script>
     <script>
         document.getElementById('addAddressBtn').addEventListener('click', function () {
             document.getElementById('addAddressForm').style.display = 'block';
@@ -174,6 +290,8 @@
                 })
                 .catch(error => console.error('Error:', error));
         }
+
+        
     </script>
 </body>
 

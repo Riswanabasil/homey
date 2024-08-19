@@ -5,6 +5,8 @@ const categoryController=require("../controllers/admin/categoryController")
 const userController=require("../controllers/admin/userController")
 const productController=require("../controllers/admin/productController")
 const admin=require('../middlewares/authMiddleware')
+const ordersController=require('../controllers/admin/ordersController')
+const couponController=require('../controllers/admin/couponController')
 
 // admin router
 router.get("/",adminController.loadLogin)
@@ -33,6 +35,21 @@ router.post('/product/add',admin.isAdmin, productController.addProduct);
 router.post('/product/edit/:id',admin.isAdmin, productController.editProduct);
 router.post('/product/toggle/:id',admin.isAdmin, productController.toggleProductStatus);
 router.post('/product/remove-image', productController.removeProductImage)
+
+//order 
+
+router.get('/orders',admin.isAdmin, ordersController.listOrders);
+router.get('/orders/:id', ordersController.viewOrder)
+router.post('/orders/:id/status',ordersController.updateOrderStatus)
+
+//coupon
+
+router.get('/coupons',admin.isAdmin,couponController.listCoupons)
+router.get('/coupons/add',couponController.loadAddCoupon)
+router.post('/coupons/add',couponController.addCoupon)
+router.get('/coupons/edit/:id', couponController.editCouponForm);
+router.post('/coupons/edit/:id', couponController.updateCoupon);
+router.post('/coupons/delete/:couponId', couponController.deleteCoupon)
 
 
 module.exports=router

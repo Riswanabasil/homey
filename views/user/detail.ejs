@@ -301,16 +301,58 @@
 														<option data-sku="" value="33570710342"> Silver / 42mm - <span class=money>$349.99 USD</span> </option>
 														<option data-sku="" value="33570737222"> Silver / 46mm - <span class=money>$549.99 USD</span> </option>
 													</select>
+													
 													<div class="product-single__add-to-cart">
 														
 														
 					<button onclick="addToCart('<%= product._id %>')" class="btn btn-primary">Add to Cart</button>
+					<% if (user && user.wishlist.some(item => item.productId.toString() === product._id.toString())) { %>
+						<button style="color: #3b5d50;" class="btn btn-primary mt-2" disabled> already In Wishlist</button>
+					<% } else { %>
+						<button onclick="addToWishlist('<%= product._id %>')" class="btn btn-primary mt-2">Add to Wishlist</button>
+					<% } %>
 													</div>
 												<!-- </form> -->
 											</div>
 										</div>
 										
 									</div>
+									<script>
+										function addToWishlist(productId) {
+											fetch(`/wishlist/add/${productId}`, {
+												method: 'POST',
+												headers: {
+													'Content-Type': 'application/json'
+												},
+											})
+											.then(response => response.json())
+											.then(data => {
+												if (data.success) {
+													Swal.fire({
+														icon: 'success',
+														title: 'Added to Wishlist',
+														showConfirmButton: false,
+														timer: 1500
+													});
+												} else {
+													Swal.fire({
+														icon: 'error',
+														title: 'Error',
+														text: data.message
+													});
+												}
+											})
+											.catch(error => {
+												console.error('Error adding to wishlist:', error);
+												Swal.fire({
+													icon: 'error',
+													title: 'Error',
+													text: 'An error occurred while adding to wishlist'
+												});
+											});
+										}
+									</script>
+									
 									<hr class="hr--clear">
 									<div id="product-additional-information">
 										<div class="related-products">

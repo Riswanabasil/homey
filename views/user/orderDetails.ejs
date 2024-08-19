@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details | Homey</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .breadcrumb-container {
+            margin-top: 20px;
+        }
+
+        .order-details-container {
+            margin-top: 20px;
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        .order-details-header {
+            background-color: #fff;
+            padding: 10px 20px;
+            border-bottom: 1px solid #dee2e6;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .order-details-body {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 0 0 5px 5px;
+        }
+
+        .order-status {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .order-status.cancelled {
+            color: red;
+        }
+
+        .order-status.delivered {
+            color: green;
+        }
+    </style>
+</head>
+
+<body>
+  <nav class="custom-navbar navbar navbar-expand-md navbar-dark bg-dark" aria-label="Furni navigation bar">
+    <div class="container">
+      <a class="navbar-brand" href="/">Homey<span>.</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsFurni" aria-controls="navbarsFurni" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarsFurni">
+        <ul class="custom-navbar-nav navbar-nav ms-auto mb-2 mb-md-0">
+          <li class="nav-item">
+            <a class="nav-link" href="/">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/shop">Shop</a>
+          </li>
+          <!-- <li class="nav-item">
+            <a class="nav-link" href="/profile">Profile</a>
+          </li> -->
+          <li class="nav-item">
+            <a class="nav-link" href="/logout">Logout</a>
+          </li>
+        </ul>
+        <ul class="custom-navbar-cta navbar-nav mb-2 mb-md-0 ms-5">
+          <li class="nav-item">
+            <li><a class="nav-link" href="/profile"><img src="images/user.svg"></a></li>
+            <a class="nav-link" href="/cart"><img src="/images/cart.svg"></a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+    <div class="container breadcrumb-container">
+        <!-- Breadcrumbs -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/orders">Orders</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Order Details</li>
+            </ol>
+        </nav>
+    </div>
+
+    <div class="container order-details-container">
+        <div class="order-details-header">
+            <h3>Order Details</h3>
+        </div>
+        <div class="order-details-body">
+            <p>Order Id: <strong><%= order.orderId %></strong></p>
+            <p>Date: <strong><%= order.createdAt.toDateString() %></strong></p>
+            <p>Total: <strong>₹<%= order.total %></strong></p>
+            <p>Payment Method: <strong><%= order.paymentMethod %></strong></p>
+
+            <h4 class="order-status <%= order.status.toLowerCase() %>">Order Status: <%= order.status %></h4>
+
+            <h4>Order Details</h4>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% order.products.forEach(product => { %>
+                        <tr>
+                            <td><%= product.productId.productName %></td>
+                            <td>₹<%= product.price %></td>
+                            <td><%= product.quantity %></td>
+                            <td>₹<%= product.price * product.quantity %></td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+
+            <% if (order.status === 'Order Placed' || order.status === 'Shipped') { %>
+                <form action="/orders/cancel/<%= order._id %>" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+                </form>
+            <% } else if (order.status === 'Delivered') { %>
+                <form action="/orders/return/<%= order._id %>" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-warning btn-sm">Return</button>
+                </form>
+            <% } %>
+        </div>
+    </div>
+
+    
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/custom.js"></script>
+</body>
+
+</html>

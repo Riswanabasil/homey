@@ -113,9 +113,9 @@
       <div class="row">
         <div class="col-md-6">
           <div class="row mb-5">
-            <div class="col-md-6 mb-3 mb-md-0">
+            <!-- <div class="col-md-6 mb-3 mb-md-0">
               <button class="btn btn-black btn-sm btn-block">Update Cart</button>
-            </div>
+            </div> -->
             <div class="col-md-6">
                 <a href="/shop" class="btn btn-outline-black btn-sm btn-block">Continue Shopping</a>
             </div>
@@ -129,8 +129,17 @@
               <input type="text" class="form-control py-3" id="coupon" placeholder="Coupon Code">
             </div>
             <div class="col-md-4">
-              <button class="btn btn-black">Apply Coupon</button>
+              <button class="btn btn-black" id="applyCouponBtn">Apply Coupon</button>
             </div>
+            <% if (session.coupon) { %>
+              <div class="row mt-3">
+                  <div class="col-md-12">
+                      <p class="text-success">Coupon "<%= session.coupon.code %>" applied. Discount: ₹<%= session.coupon.discount %></p>
+                      <button class="btn btn-danger" id="removeCouponBtn">Remove Coupon</button>
+                  </div>
+              </div>
+          <% } %>
+          
           </div>
         </div>
         <div class="col-md-6 pl-5">
@@ -154,7 +163,8 @@
                   <span class="text-black">Total</span>
                 </div>
                 <div class="col-md-6 text-right">
-                  <strong class="text-black">₹<%= total %></strong>
+                  <!-- <strong class="text-black">₹<%= total %></strong> -->
+                  <strong class="text-black"> ₹<%= session.coupon ? session.coupon.total : subtotal %></strong>
                 </div>
               </div>
               <div class="row">
@@ -169,73 +179,7 @@
       </div>
     </div>
   </div>
-  <!-- <script>
-    function updateCart(productId, quantity) {
-        fetch(`/update-cart/${productId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ quantity })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: data.message,
-                }).then(() => {
-                    window.location.reload();
-                });
-            } else {
-              // showPopup(data.message, !data.success);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: data.message,
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'An error occurred while updating the cart',
-            });
-        });
-    }
-
-    function showPopup(message, isError) {
-    const overlay = document.createElement('div');
-    overlay.className = 'overlay';
-    const popup = document.createElement('div');
-    popup.className = 'popup';
-    popup.textContent = message;
-
-    const closeButton = document.createElement('button');
-    closeButton.textContent = 'Close';
-    closeButton.onclick = function() {
-        document.body.removeChild(popup);
-        document.body.removeChild(overlay);
-    };
-
-    popup.appendChild(closeButton);
-    document.body.appendChild(overlay);
-    document.body.appendChild(popup);
-
-    // Style differently based on error or success
-    if (isError) {
-        popup.style.backgroundColor = 'red';
-    } else {
-        popup.style.backgroundColor = 'green';
-    }
-
-    overlay.style.display = 'block';
-    popup.style.display = 'block';
-}
-</script> -->
+  
 <script>
   function updateCart(productId, quantity) {
       fetch(`/update-cart/${productId}`, {
@@ -272,6 +216,41 @@
           });
       });
   }
+</script>
+<script>
+   document.getElementById('applyCouponBtn').addEventListener('click', async function() {
+        const couponCode = document.getElementById('coupon').value;
+        
+        const response = await fetch('/cart/apply-coupon', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ couponCode })
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            // Refresh the page or update the UI with the new total
+            window.location.reload();
+        } else {
+            alert(result.message);
+        }
+    });
+
+    document.getElementById('removeCouponBtn').addEventListener('click', async function() {
+        const response = await fetch('/cart/remove-coupon', {
+            method: 'POST'
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            // Refresh the page or update the UI to remove the discount
+            window.location.reload();
+        } else {
+            alert(result.message);
+        }
+    });
 </script>
   <!-- Start Footer Section -->
   <%- include('../../views/partials/user/footer') %>

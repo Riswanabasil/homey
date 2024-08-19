@@ -91,25 +91,25 @@
             <% if (message) { %>
                 <div class="alert alert-danger"><%= message %></div>
             <% } %>
-            <form id="signform" action="/signup" method="POST">
+            <form id="signform" action="/signup" method="POST" >
                 <div class="form-group">
                     <label for="fullname">Full Name</label>
-                    <input type="text" class="form-control" id="name" name="name" required>
+                    <input type="text" class="form-control" id="name" name="name" required >
                     <div id="error1" class="error-message"></div>
                 </div>
                 <div class="form-group">
                     <label for="email">Email address</label>
-                    <input type="email" class="form-control" id="email" name="email" required>
+                    <input type="email" class="form-control" id="email" name="email" required >
                     <div id="error2" class="error-message"></div>
                 </div>
                 <div class="form-group">
                     <label for="phone">Phone Number</label>
-                    <input type="tel" class="form-control" id="phone" name="phone" required>
+                    <input type="tel" class="form-control" pattern="[2-9]{2}\d{8}" id="phone" name="phone" required>
                     <div id="error3" class="error-message"></div>
                 </div>
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" class="form-control" id="password" name="password" required>
+                    <input type="password" class="form-control" id="password" name="password" required >
                     <div id="error4" class="error-message"></div>
                 </div>
                 <div class="form-group">
@@ -117,7 +117,7 @@
                     <input type="password" class="form-control" id="cPassword" name="cPassword" required>
                     <div id="error5" class="error-message"></div>
                 </div>
-                <button type="submit" class="btn btn-custom btn-block">Sign Up</button>
+                <button type="submit"  value="submit" class="btn btn-custom btn-block">Sign Up</button>
                 <a href="/auth/google" type="button" class="btn btn-google btn-block">Sign Up with Google</a>
                 <p class="form-text mt-3">Already have an account? <a href="/login">Login here</a></p>
             </form>
@@ -131,7 +131,7 @@
         const emailid = document.getElementById("email");
         const phoneid = document.getElementById("phone");
         const passid = document.getElementById("password");
-        const cpassid = document.getElementById("confirm-password");
+        const cpassid = document.getElementById("cPassword");
         const error1 = document.getElementById("error1");
         const error2 = document.getElementById("error2");
         const error3 = document.getElementById("error3");
@@ -139,7 +139,7 @@
         const error5 = document.getElementById("error5");
         const signform = document.getElementById("signform");
 
-        function nameValidateChecking(e) {
+        function nameValidateChecking() {
             const nameVal = nameid.value;
             const namePattern = /^[A-Za-z\s]+$/;
 
@@ -155,7 +155,7 @@
             }
         }
 
-        function emailValidateChecking(e) {
+        function emailValidateChecking() {
             const emailVal = emailid.value;
             const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailPattern.test(emailVal)) {
@@ -167,18 +167,23 @@
             }
         }
 
-        function phoneValidateChecking(e) {
+        function phoneValidateChecking() {
             const phoneVal = phoneid.value;
             if (phoneVal.trim() === "") {
                 error3.style.display = "block";
                 error3.innerHTML = "Enter a valid phone number";
-            } else {
+            } 
+            // else if (phoneval.length < 10 || phoneval.length > 10) {
+            //     error3.style.display = "block";
+            //     error3.innerHTML = "Enter 10 digit";
+            // } 
+             else {
                 error3.style.display = "none";
                 error3.innerHTML = "";
             }
         }
 
-        function passValidateChecking(e) {
+        function passValidateChecking() {
             const passVal = passid.value;
             const cpassVal = cpassid.value;
             const alpha = /[a-zA-Z]/;
@@ -216,6 +221,7 @@
                 }
             });
         });
+        
     </script>
 </body>
 </html>

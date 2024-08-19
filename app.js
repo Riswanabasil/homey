@@ -7,6 +7,7 @@ const userRouter=require("./routes/userRouter")
 const adminRouter=require("./routes/adminRouter")
 const passport=require("./config/passport")
 const multer=require("multer")
+const flash=require('express-flash')
 
 const app=express()
 app.use(express.json())
@@ -21,6 +22,7 @@ app.use(session({
         maxAge:72*60*60*1000
     }
 }))
+app.use(flash())
 app.use(passport.initialize())
 app.use(passport.session())
 // app.use((req,res,next)=>{

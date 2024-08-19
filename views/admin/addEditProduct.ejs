@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Product | Homey</title>
+    <title><%= product ? 'Edit Product' : 'Add Product' %> | Homey</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
@@ -17,25 +17,8 @@
         .navbar-brand, .nav-link, .logout-btn {
             color: white !important;
         }
-        .d-flex {
-            display: flex;
-        }
-        .sidebar {
-            width: 200px;
-            height: 180vh;
-            padding: 1rem;
-            background-color: #3b5d50;
-        }
-        .sidebar .nav-link {
-            color: white;
-        }
-        .sidebar .nav-link:hover {
-            background-color: #2f4a41;
-            border-radius: 4px;
-        }
         .container {
             margin-top: 20px;
-            flex-grow: 1;
         }
         .form-group label {
             font-weight: bold;
@@ -48,6 +31,29 @@
         }
         .btn-custom:hover {
             background-color: #2f4a41;
+        }
+        .current-images img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .current-images .remove-btn {
+            display: block;
+            margin-top: 5px;
+        }
+        .centered-form {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .error-message {
+            color: red;
+            display: none;
         }
         @media (max-width: 768px) {
             .sidebar {
@@ -66,18 +72,6 @@
                 margin-top: 0;
             }
         }
-        .current-images img {
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
-  margin-right: 10px;
-  margin-bottom: 10px;
-}
-
-.current-images .remove-btn {
-  display: block;
-  margin-top: 5px;
-}
     </style>
 </head>
 <body>
@@ -110,129 +104,181 @@
             </ul>
         </div>
 
-        <main class="mt-5 pt-3">
-            <div class="container-fluid">
-              <div class="row">
-                <div class="col-md-12">
-                 
-              
-                    <div class="container mt-5">
-                        <h2><%= product ? 'Edit Product' : 'Add Product' %></h2>
-                        <form action="<%= product ? '/admin/product/edit/' + product._id : '/admin/product/add' %>" method="POST" enctype="multipart/form-data">
-                            <div class="mb-3">
-                                <label for="productName" class="form-label">Product Name</label>
-                                <input type="text" class="form-control" id="productName" name="productName" value="<%= product ? product.productName : '' %>" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="description" class="form-label">Description</label>
-                                <textarea class="form-control" id="description" name="description" required><%= product ? product.description : '' %></textarea>
-                            </div>
-                            <!-- <div class="mb-3">
-                                <label for="author" class="form-label">Author</label>
-                                <input type="text" class="form-control" id="author" name="author" value="<%= product ? product.author : '' %>" required>
-                            </div> -->
-                            <div class="mb-3">
-                                <label for="category" class="form-label">Category</label>
-                                <select class="form-control" id="category" name="category" required>
-                                    <% categories.forEach(category => { %>
-                                        <option value="<%= category._id %>" <%= product && product.category.equals(category._id) ? 'selected' : '' %>><%= category.name %></option>
-                                    <% }) %>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="regularPrice" class="form-label">Regular Price</label>
-                                <input type="number" class="form-control" id="regularPrice" name="regularPrice" value="<%= product ? product.regularPrice : '' %>" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="salePrice" class="form-label">Sale Price</label>
-                                <input type="number" class="form-control" id="salePrice" name="salePrice" value="<%= product ? product.salePrice : '' %>" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="productOffer" class="form-label">Product Offer (%)</label>
-                                <input type="number" class="form-control" id="productOffer" name="productOffer" value="<%= product ? product.productOffer : '' %>" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="quantity" class="form-label">Quantity</label>
-                                <input type="number" class="form-control" id="quantity" name="quantity" value="<%= product ? product.quantity : '' %>" required>
-                            </div>
-                            <!-- <div class="mb-3">
-                                <label for="productImage" class="form-label">Product Images</label>
-                                <input type="file" class="form-control" id="productImage" name="productImage" value="<%= product ? product.productImage : '' %>" multiple required>
-                            </div>
-                            <button type="submit" class="btn btn-primary"><%= product ? 'Update Product' : 'Add Product' %></button> -->
-                            <div class="mb-3">
-                                <label for="productImage" class="form-label">Product Images</label>
-                                <input type="file" class="form-control" id="productImage" name="productImage"value="<%= product ? product.productImage : '' %>" multiple required>
-                              </div>
-                              <div class="mb-3">
-                                <label>Current Images:</label>
-                                <!-- <div class="current-images">
-                                  <% if (product && product.productImage && product.productImage.length > 0) { %>
-                                    <% product.productImage.forEach((image,index) => { %>
-                                      <div class="current-image">
+        <main class="mt-5 pt-3 container">
+            <div class="centered-form">
+                <h2><%= product ? 'Edit Product' : 'Add Product' %></h2>
+                <form id="productForm" action="<%= product ? '/admin/product/edit/' + product._id : '/admin/product/add' %>" method="POST" enctype="multipart/form-data" onsubmit="return validateForm()">
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="productName">Product Name</label>
+                            <input type="text" class="form-control" id="productName" name="productName" value="<%= product ? product.productName : '' %>" required>
+                            <div id="productName-error" class="error-message">Please enter a product name.</div>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="category">Category</label>
+                            <select class="form-control" id="category" name="category" required>
+                                <% categories.forEach(category => { %>
+                                    <option value="<%= category._id %>" <%= product && product.category.equals(category._id) ? 'selected' : '' %>><%= category.name %></option>
+                                <% }) %>
+                            </select>
+                            <div id="category-error" class="error-message">Please select a category.</div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="regularPrice">Regular Price</label>
+                            <input type="number" class="form-control" id="regularPrice" name="regularPrice" value="<%= product ? product.regularPrice : '' %>" required>
+                            <div id="regularPrice-error" class="error-message">Please enter a non-negative regular price.</div>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="salePrice">Sale Price</label>
+                            <input type="number" class="form-control" id="salePrice" name="salePrice" value="<%= product ? product.salePrice : '' %>" required>
+                            <div id="salePrice-error" class="error-message">Please enter a non-negative sale price.</div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="productOffer">Product Offer (%)</label>
+                            <input type="number" class="form-control" id="productOffer" name="productOffer" value="<%= product ? product.productOffer : '' %>" required>
+                            <div id="productOffer-error" class="error-message">Please enter a non-negative product offer percentage.</div>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="quantity">Quantity</label>
+                            <input type="number" class="form-control" id="quantity" name="quantity" value="<%= product ? product.quantity : '' %>" required>
+                            <div id="quantity-error" class="error-message">Please enter a non-negative quantity.</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" required><%= product ? product.description : '' %></textarea>
+                        <div id="description-error" class="error-message">Please enter a description.</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="productImage">Product Images</label>
+                        <input type="file" class="form-control" id="productImage" name="productImage" multiple>
+                        <div id="productImage-error" class="error-message">Please upload at least one product image.</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Current Images:</label>
+                        <div class="current-images">
+                            <% if (product && product.productImage && product.productImage.length > 0) { %>
+                                <% product.productImage.forEach((image, index) => { %>
+                                    <div class="current-image">
                                         <img src="<%= image %>" alt="Product Image">
                                         <button type="button" class="btn btn-danger btn-sm remove-image" data-index="<%= index %>" data-product-id="<%= product._id %>">Remove</button>
-                                      </div>
-                                    <% }) %>
-                                  <% } else { %>
-                                    <p>No images uploaded.</p>
-                                  <% } %>
-                                </div> -->
-
-                              </div>
-                              <div id="image-container">
-                                <% if (product && product.productImage.length > 0) { %>
-                                    <% product.productImage.forEach((image, index) => { %>
-                                        <div class="img-thumbnail-wrapper">
-                                            <img src="<%= image %>" alt="Product Image" class="img-thumbnail" style="width: 150px; height: auto;">
-                                            <button type="button" class="btn btn-danger btn-sm remove-image" data-index="<%= index %>" data-product-id="<%= product._id %>">Remove</button>
-                                        </div>
-                                    <% }) %>
-                                <% } %>
-                            </div>
-                              <button type="submit" class="btn btn-primary"><%= product ? 'Update Product' : 'Add Product' %></button>
-                        </form>
+                                    </div>
+                                <% }) %>
+                            <% } else { %>
+                                <p>No images uploaded.</p>
+                            <% } %>
+                        </div>
                     </div>
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-primary"><%= product ? 'Update Product' : 'Add Product' %></button>
+                        <a href="/admin/product" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </main>
     </div>
-    </div>
-    </div>
-    </main>
-    <script>
-        document.querySelectorAll('.remove-image').forEach(button => {
-              button.addEventListener('click', function() {
-                  const index = this.getAttribute('data-index');
-                  const productId = this.getAttribute('data-product-id');
-                  const xhr = new XMLHttpRequest();
-                  xhr.open('POST', '/admin/product/remove-image', true);
-                  xhr.setRequestHeader('Content-Type', 'application/json');
-                  xhr.onreadystatechange = function() {
-                      if (xhr.readyState === 4 && xhr.status === 200) {
-                          location.reload();
-                      }
-                  };
-                  xhr.send(JSON.stringify({ productId, index }));
-              });
-          });
-    </script>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <!-- <script>
-        document.addEventListener('DOMContentLoaded', function() {
-          const removedImages = [];
-          document.querySelectorAll('.remove-btn').forEach(button => {
-            button.addEventListener('click', function() {
-              const image = this.getAttribute('data-image');
-              removedImages.push(image);
-              document.getElementById('removedImages').value = removedImages.join(',');
-              this.parentElement.remove();
+    <script>
+        function validateForm() {
+            let isValid = true;
 
-           
-          imageWrapper.remove();
+            const productName = document.getElementById('productName');
+            const productNameError = document.getElementById('productName-error');
+            if (!productName.value.trim()) {
+                productNameError.style.display = 'block';
+                isValid = false;
+            } else {
+                productNameError.style.display = 'none';
+            }
+
+            const category = document.getElementById('category');
+            const categoryError = document.getElementById('category-error');
+            if (!category.value) {
+                categoryError.style.display = 'block';
+                isValid = false;
+            } else {
+                categoryError.style.display = 'none';
+            }
+
+            const regularPrice = document.getElementById('regularPrice');
+            const regularPriceError = document.getElementById('regularPrice-error');
+            if (regularPrice.value < 0) {
+                regularPriceError.style.display = 'block';
+                isValid = false;
+            } else {
+                regularPriceError.style.display = 'none';
+            }
+
+            const salePrice = document.getElementById('salePrice');
+            const salePriceError = document.getElementById('salePrice-error');
+            if (salePrice.value < 0) {
+                salePriceError.style.display = 'block';
+                isValid = false;
+            } else {
+                salePriceError.style.display = 'none';
+            }
+
+            const productOffer = document.getElementById('productOffer');
+            const productOfferError = document.getElementById('productOffer-error');
+            if (productOffer.value < 0) {
+                productOfferError.style.display = 'block';
+                isValid = false;
+            } else {
+                productOfferError.style.display = 'none';
+            }
+
+            const quantity = document.getElementById('quantity');
+            const quantityError = document.getElementById('quantity-error');
+            if (quantity.value < 0) {
+                quantityError.style.display = 'block';
+                isValid = false;
+            } else {
+                quantityError.style.display = 'none';
+            }
+
+            const description = document.getElementById('description');
+            const descriptionError = document.getElementById('description-error');
+            if (!description.value.trim()) {
+                descriptionError.style.display = 'block';
+                isValid = false;
+            } else {
+                descriptionError.style.display = 'none';
+            }
+
+            const productImage = document.getElementById('productImage');
+            const productImageError = document.getElementById('productImage-error');
+            if (!productImage.files.length && !product) {
+                productImageError.style.display = 'block';
+                isValid = false;
+            } else {
+                productImageError.style.display = 'none';
+            }
+
+            return isValid;
+        }
+
+        document.querySelectorAll('.remove-image').forEach(button => {
+            button.addEventListener('click', function() {
+                const index = this.getAttribute('data-index');
+                const productId = this.getAttribute('data-product-id');
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '/admin/product/remove-image', true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        location.reload();
+                    }
+                };
+                xhr.send(JSON.stringify({ productId, index }));
             });
-          });
         });
-      </script> -->
+    </script>
 </body>
 </html>
