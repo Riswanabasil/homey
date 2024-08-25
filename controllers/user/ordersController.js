@@ -18,6 +18,11 @@ const cancelOrder = async (req, res) => {
       const order = await Order.findById(orderId);
       
       if (order.status === 'Order Placed' || order.status === 'Shipped') {
+
+        const user = await User.findById(order.user);
+        user.wallet += order.total; 
+        await user.save();
+
       
         for (const item of order.products) {
           await Product.findByIdAndUpdate(item.productId, { $inc: { quantity: item.quantity } });
@@ -39,7 +44,11 @@ const cancelOrder = async (req, res) => {
       const order = await Order.findById(orderId);
       
       if (order.status === 'Delivered') {
-        // Update product quantity
+       
+        const user = await User.findById(order.user);
+        user.wallet += order.total;  
+        await user.save();
+
         for (const item of order.products) {
           await Product.findByIdAndUpdate(item.productId, { $inc: { quantity: item.quantity } });
         }

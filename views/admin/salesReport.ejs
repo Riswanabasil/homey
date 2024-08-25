@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Report | Homey Admin</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+        .report-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            flex: 1; /* Each form group will take equal width */
+        }
+        .btn-custom {
+            background-color: #3b5d50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+        }
+        .btn-custom:hover {
+            background-color: #2f4a41;
+        }
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .download-buttons {
+            display: none; /* Hidden by default */
+            flex-direction: row;
+            align-items: center;
+           margin-left: 35%;
+        }
+        .navbar {
+            background-color: #3b5d50;
+            padding: 10px 20px;
+        }
+        .navbar-brand, .nav-link, .logout-btn {
+            color: white !important;
+        }
+        .navbar-nav .nav-link {
+            margin-right: 10px; /* ensures spacing on smaller screens */
+        }
+        .sidebar {
+            background-color: #3b5d50;
+            height: 100vh;
+            padding-top: 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 200px;
+            transition: all 0.3s;
+        }
+        .sidebar .brand {
+            font-size: 1.5rem;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            font-weight: bold;
+        }
+        .sidebar a {
+            color: white;
+            display: block;
+            padding: 10px 20px;
+            text-decoration: none;
+        }
+        .sidebar a:hover {
+            background-color: #2f4a41;
+        }
+        .content {
+            margin-left: 200px;
+            padding: 20px;
+            padding-top: 40px;
+        }
+        .form-control, .btn-custom {
+            font-size: 16px;
+        }
+        .generate-btn {
+            width: 20px; /* Reduced width */
+        }
+        /* .btn-custom {
+            background-color: #3b5d50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+        } */
+        /* .btn-custom:hover {
+            background-color: #2f4a41;
+        } */
+        @media (max-width: 768px) {
+            .navbar .navbar-collapse {
+                flex-grow: 0; /* Prevents navbar from taking too much space */
+            }
+            .sidebar {
+                width: 0;
+                overflow: hidden;
+            }
+            .sidebar.active {
+                width: 200px;
+            }
+            .content {
+                margin-left: 0;
+            }
+            .content.active {
+                margin-left: 200px;
+            }
+            .navbar-toggler {
+                margin-left: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <a class="navbar-brand" href="#">Homey Admin</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link logout-btn" href="/admin/logout">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    
+    <div class="sidebar">
+        <div class="brand">Homey</div>
+        <a href="/admin/dashboard">Dashboard</a>
+        <a href="/admin/orders">Orders</a>
+        <a href="/admin/category">Category</a>
+        <a href="/admin/coupons">Coupon</a>
+        <a href="/admin/product">Product</a>
+        <a href="/admin/user">User</a>
+        <a href="/admin/referral">Offer</a>
+        <a href="/admin/sales-report" class="active">Sales</a>
+    </div>
+    
+    <div class="content">
+       
+        <div class="container mt-2">
+            <h1>Sales Report</h1>
+            <div class="report-controls">
+                <div class="form-group">
+                    <label for="period">Period:</label>
+                    <select class="form-control" id="period">
+                        <option>Default</option>
+                        <option>Last 1 Day</option>
+                        <option>Last 1 Week</option>
+                        <option>Last 1 Month</option>
+                        <option>Last 1 Year</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="startDate">Start Date:</label>
+                    <input type="date" class="form-control mx-2" id="startDate">
+                </div>
+                <div class="form-group">
+                    <label for="endDate">End Date:</label>
+                    <input type="date" class="form-control mx-3" id="endDate">
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-custom generate-btn" onclick="generateReport()" >Generate Report</button>
+            </div>
+            <div class="download-buttons">
+                <button class="btn btn-custom mt-2" onclick="downloadPDF()">Download PDF</button>
+                <button class="btn btn-custom mt-2 mx-2" onclick="downloadExcel()">Download Excel</button>
+            </div>
+        </div>
+        <div class="container mt-4">
+            <div id="reportSummary" class="report-summary"></div>
+
+            <table class="table"  id="salesTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Order ID</th>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Coupon</th>
+                        <th>Discount</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                   
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.navbar-toggler').on('click', function() {
+                $('.sidebar').toggleClass('active');
+                $('.content').toggleClass('active');
+            });
+        });
+    </script>
+     <script>
+        function toggleDownloadButtons() {
+            
+        }
+    </script>
+    <script>
+        function generateReport() {
+    const period = document.getElementById('period').value;
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+
+    fetch(`/admin/fetch-sales-data?startDate=${startDate}&endDate=${endDate}&period=${period}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                alert(data.message);
+            } else {
+                updateReportSummary(data.summary);
+                updateOrdersTable(data.orders);
+                document.querySelector('.download-buttons').style.display = 'flex';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching sales data:', error);
+            alert('Failed to fetch sales data: ' + error.message);
+        });
+}
+
+function updateReportSummary(summary) {
+    const summaryDiv = document.getElementById('reportSummary');
+    summaryDiv.innerHTML = `
+        <h2>Report Summary</h2>
+        <p><strong>Overall sales count:</strong> ${summary.totalSales}</p>
+        <p><strong>Overall order amount:</strong> ₹${summary.totalAmount.toFixed(2)}</p>
+        <p><strong>Overall discount:</strong> ${summary.totalDiscount} %</p>
+    `;
+}
+
+function updateOrdersTable(orders) {
+    const tableBody = document.querySelector('#salesTable tbody');
+    tableBody.innerHTML = ''; // Clear existing rows
+
+    orders.forEach(order => {
+        order.products.forEach(product => {
+            const row = `<tr>
+                            <td>${order.date}</td>
+                            <td>${order.orderId}</td>
+                            <td>${product.name}</td>
+                            <td>${product.quantity}</td>
+                            <td>${order.coupon}</td>
+                            <td>${product.discount}%</td>
+                            <td>₹${product.total.toFixed(2)}</td>
+                        </tr>`;
+            tableBody.innerHTML += row;
+        });
+    });
+}
+
+function downloadPDF() {
+    const period = document.getElementById('period').value;
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+
+    // Construct the URL with query parameters
+    const url = `/admin/download-sales-report-pdf?startDate=${startDate}&endDate=${endDate}&period=${period}`;
+
+    // Fetch call to initiate PDF download
+    fetch(url)
+        .then(response => response.blob())  // Convert the response to a Blob (binary data)
+        .then(blob => {
+            // Create a URL for the Blob
+            const blobUrl = window.URL.createObjectURL(blob);
+
+            // Create a temporary anchor element to trigger the download
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = 'sales-report.pdf';  // This will be the filename for the downloaded file
+
+            // Append the anchor to the body, trigger click, and remove it
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Free up the Blob URL
+            window.URL.revokeObjectURL(blobUrl);
+        })
+        .catch(error => console.error('Error downloading PDF:', error));
+}
+
+function downloadExcel() {
+    const period = document.getElementById('period').value;
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+
+    const url = `/admin/path-to-excel-download?startDate=${startDate}&endDate=${endDate}&period=${period}`;
+    window.location.href = url; // Redirects to the backend route, triggering the file download
+}
+    </script>
+
+</body>
+</html>

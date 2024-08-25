@@ -112,6 +112,7 @@
         <a href="/admin/coupons">Coupon</a>
         <a href="/admin/product">Product</a>
         <a href="/admin/user">User</a>
+        <a href="/admin/referral">Offer</a>
         
     </div>
 
@@ -122,12 +123,17 @@
                 <label for="name" class="sr-only">Category Name:</label>
                 <input type="text" class="form-control" id="name" name="name" placeholder="Category Name" required>
             </div>
+            <div class="form-group mr-2">
+                <label for="offer" class="sr-only">Offer:</label>
+                <input type="number" class="form-control" id="offer" name="offer" placeholder="Offer (%)" required>
+            </div>
             <button type="submit" class="btn btn-custom">Add Category</button>
         </form>
         <table class="table table-striped">
             <thead>
                 <tr>
                     <th>Name</th>
+                    <th>Offer</th>
                     <th>Action</th>
                     <th>Status</th>
                 </tr>
@@ -136,12 +142,14 @@
                 <% categories.forEach(category => { %>
                     <tr>
                         <td><%= category.name %></td>
+                        <td><%= category.offer %></td>
                         <td>
                             <div class="d-inline">
                                 <button class="btn btn-success btn-sm mr-2" onclick="showEditForm('<%= category._id %>')">Edit</button>
                                 <form id="edit-form-<%= category._id %>" action="/admin/category/edit" method="POST" class="form-edit mt-2">
                                     <input type="hidden" name="id" value="<%= category._id %>">
                                     <input type="text" name="name" value="<%= category.name %>" required>
+                                    <input type="text" name="offer" value="<%= category.offer %>" required>
                                     <button type="submit" class="btn btn-success btn-sm">Save</button>
                                     <button type="button" class="btn btn-secondary btn-sm" onclick="hideEditForm('<%= category._id %>')">Cancel</button>
                                 </form>

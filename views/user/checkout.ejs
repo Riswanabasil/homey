@@ -93,6 +93,7 @@
                                 <% }) %>
                             </div>
                     </div>
+
                 </div>
                 <div class="col-md-6">
                     <div class="p-3 p-lg-5 border bg-white">
@@ -129,16 +130,27 @@
                                 </tr>
                             </tbody>
                         </table>
-                       
                         <div class="form-group">
-                            <label for="payment-method" class="text-black">Payment Method</label><br>
-                            <input type="radio" id="cod" name="paymentMethod" value="COD" required>
+                            <label for="wallet-balance" class="text-black">Wallet Balance</label><br>
+                            <p>Your available balance: ₹<%= user.wallet %></p>
+
+                            <input type="checkbox" id="use-wallet" name="useWallet" value="true">
+                                <label for="use-wallet">Use wallet balance</label><br>
+                
+                            <!-- <% if (user.wallet > 0) { %>
+                                <input type="checkbox" id="use-wallet" name="useWallet" value="true">
+                                <label for="use-wallet">Use wallet balance</label>
+                            <% } else { %>
+                                <p class="text-muted">You have no balance in your wallet.</p>
+                            <% } %> -->
+                            <!-- <label for="payment-method" class="text-black">Payment Method</label><br> -->
+                            <input type="radio" id="cod" name="paymentMethod" value="COD" >
                             <label for="cod">Cash on Delivery</label><br>
-                            <input type="radio" id="razorpay" name="paymentMethod" value="Razorpay" required>
+                            <input type="radio" id="razorpay" name="paymentMethod" value="Razorpay" >
                             <label for="razorpay">Online payment</label>
                         </div>
                         <div class="form-group">
-                            <button type="submit" class="btn btn-black btn-lg py-3 btn-block mt-2">Place Order</button>
+                            <button type="button" id="placeOrderButton" class="btn btn-black btn-lg py-3 btn-block mt-2">Place Order</button>
                         </div>
                     </form>
                     </div>
@@ -154,90 +166,170 @@
     
     <script>
 
-document.getElementById('placeOrderForm').addEventListener('submit',async function(event) {
-    event.preventDefault();
+// document.getElementById('placeOrderForm').addEventListener('submit',async function(event) {
+//     event.preventDefault();
 
-    const selectedAddress = document.querySelector('input[name="addressId"]:checked');
+//     const selectedAddress = document.querySelector('input[name="addressId"]:checked');
 
-    if (!selectedAddress) {
-        alert('Please select an address before placing your order.');
-        return; 
-    }
+//     if (!selectedAddress) {
+//         alert('Please select an address before placing your order.');
+//         return; 
+//     }
     
-    const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+//     const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
 
-    if (paymentMethod === 'Razorpay'){
-        try {
-            const response = await fetch('/create-razorpay-order', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        amount:`<%= total %>`
+//     if (paymentMethod === 'Razorpay'){
+//         try {
+//             const response = await fetch('/create-razorpay-order', {
+//                     method: 'POST',
+//                     headers: {
+//                         'Content-Type': 'application/json'
+//                     },
+//                     body: JSON.stringify({
+//                         amount:`<%= total %>`
                         
-                    })
-                });
-                const order = await response.json();
+//                     })
+//                 });
+//                 const order = await response.json();
 
-               if (!order.success) {
-                    alert('Failed to create Razorpay order');
-                   return;
-                }
-                const options = {
-                    "key": "<%= process.env.RAZORPAY_ID_KEY %>",
-                    "amount": order.amount,
-                    "currency": "INR",
-                    "name": "Homey",
-                    "description": "Order Payment",
-                    "order_id": order.id,
-                    "handler": function (response) {
-                        // Handle payment success
-                        fetch('/place-order', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                razorpay_payment_id: response.razorpay_payment_id,
-                                razorpay_order_id: response.razorpay_order_id,
-                                razorpay_signature: response.razorpay_signature,
-                                addressId: document.querySelector('input[name="addressId"]:checked').value,
-                                paymentMethod: 'Razorpay'
-                            })
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.success) {
-                                window.location.href = '/thankyou';
-                            } else {
-                                alert('Payment failed, please try again.');
-                            }
-                        })
-                        .catch(err => console.error('Error:', err));
-                    },
-                    "prefill": {
-                        "name": "<%= user.name %>",
-                        "email": "<%= user.email %>",
-                        "contact": "<%= user.phone %>"
-                    },
-                    "theme": {
-                        "color": "#3399cc"
-                    }
-                };
+//                if (!order.success) {
+//                     alert('Failed to create Razorpay order');
+//                    return;
+//                 }
+//                 const options = {
+//                     "key": "<%= process.env.RAZORPAY_ID_KEY %>",
+//                     "amount": order.amount,
+//                     "currency": "INR",
+//                     "name": "Homey",
+//                     "description": "Order Payment",
+//                     "order_id": order.id,
+//                     "handler": function (response) {
+                    
+//                         fetch('/place-order', {
+//                             method: 'POST',
+//                             headers: {
+//                                 'Content-Type': 'application/json'
+//                             },
+//                             body: JSON.stringify({
+//                                 razorpay_payment_id: response.razorpay_payment_id,
+//                                 razorpay_order_id: response.razorpay_order_id,
+//                                 razorpay_signature: response.razorpay_signature,
+//                                 addressId: document.querySelector('input[name="addressId"]:checked').value,
+//                                 paymentMethod: 'Razorpay'
+//                             })
+//                         })
+//                         .then(res => res.json())
+//                         .then(data => {
+//                             if (data.success) {
+//                                 window.location.href = '/thankyou';
+//                             } else {
+//                                 alert('Payment failed, please try again.');
+//                             }
+//                         })
+//                         .catch(err => console.error('Error:', err));
+//                     },
+//                     "prefill": {
+//                         "name": "<%= user.name %>",
+//                         "email": "<%= user.email %>",
+//                         "contact": "<%= user.phone %>"
+//                     },
+//                     "theme": {
+//                         "color": "#3399cc"
+//                     }
+//                 };
 
-                const rzp1 = new Razorpay(options);
-                rzp1.open();
-        } catch (error) {
-            console.error('Error creating Razorpay order:', error);
-        }
-    }else {
-            this.submit(); // Continue with COD
-        }
-    // Proceed with the form submission
-    // this.submit();
+//                 const rzp1 = new Razorpay(options);
+//                 rzp1.open();
+//         } catch (error) {
+//             console.error('Error creating Razorpay order:', error);
+//         }
+//     }else {
+//             this.submit(); 
+//         }
+
+// });
+
+document.addEventListener('DOMContentLoaded', function()  {
+    const placeOrderButton = document.getElementById('placeOrderButton');
+    placeOrderButton.addEventListener('click', function(event) {
+    const useWallet = document.getElementById('use-wallet').checked;
+    const walletAmount = `<%= user.wallet %>`;
+    const total = `<%= total %>`;
+    const paymentMethodInput = document.querySelector('input[name="paymentMethod"]:checked');
+    const paymentMethod = paymentMethodInput ? paymentMethodInput.value : null;
+    const addressId= document.querySelector('input[name="addressId"]:checked').value
+
+    if (useWallet && walletAmount >= total) {
+        processOrder({ useWallet: true, paymentMethod: 'Wallet', total: total,addressId });
+    } else if (paymentMethod === 'Razorpay') {
+        initiateRazorpay(total - (useWallet ? walletAmount : 0)); // Adjust the amount if wallet is used
+    } else if (paymentMethod === 'COD') {
+        processOrder({ useWallet: useWallet, paymentMethod: 'COD', total: total - (useWallet ? walletAmount : 0), addressId});
+    } else {
+        alert('Please select a payment method or use wallet balance.');
+    }
 });
+})
 
+function initiateRazorpay(amount) {
+    fetch('/create-razorpay-order', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ amount: amount })
+    }).then(response => response.json())
+      .then(data => {
+        if (data.success) {
+            const options = {
+                "key": "<%= process.env.RAZORPAY_ID_KEY %>",
+                "amount": data.amount,
+                "order_id": data.id,
+                "name": "Your Company Name",
+                "description": "Payment for Order",
+                "handler": function(response) {
+                    processOrder({
+                        useWallet: document.getElementById('use-wallet').checked,
+                        paymentMethod: 'Razorpay',
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_signature: response.razorpay_signature,
+                        addressId: document.querySelector('input[name="addressId"]:checked').value,
+                        total: amount
+                    });
+                },
+                "prefill": {
+                    "name": "<%= user.name %>",
+                    "email": "<%= user.email %>",
+                    "contact": "<%= user.phone %>"
+                },
+                "theme": {
+                    "color": "#3399cc"
+                }
+            };
+            var rzp1 = new Razorpay(options);
+            rzp1.open();
+        } else {
+            alert('Failed to initiate payment process. Please try again.');
+        }
+    }).catch(error => console.error('Error initiating Razorpay:', error));
+}
+
+function processOrder(data) {
+    fetch('/place-order', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    }).then(response => response.json())
+      .then(data => {
+        if (data.success) {
+            window.location.href = '/thankyou';
+        } else {
+            alert('Order processing failed, please try again.');
+        }
+    }).catch(error => {
+        console.error('Error processing order:', error);
+        alert('An error occurred, please try again.');
+    });
+}
 
 function deleteAddress(addressId) {
     if (confirm('Are you sure you want to remove this address?')) {

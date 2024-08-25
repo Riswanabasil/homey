@@ -27,6 +27,9 @@ const orderSchema = new mongoose.Schema({
             price: {
                 type: Number,
                 required: true
+            },appliedOffer: { 
+                type: Number,
+                default: 0
             }
         }
     ],
@@ -55,7 +58,7 @@ const orderSchema = new mongoose.Schema({
     paymentMethod: {
         type: String,
         required: true,
-        enum: ['COD', 'Razorpay']
+        enum: ['COD', 'Razorpay','Wallet']
     },
     razorpay: {
         orderId: {

@@ -71,7 +71,7 @@
         </ul>
         <ul class="custom-navbar-cta navbar-nav mb-2 mb-md-0 ms-5">
           <li class="nav-item">
-            <li><a class="nav-link" href="/profile"><img src="images/user.svg"></a></li>
+            <li><a class="nav-link" href="/profile"><img src="../../images/user.svg"></a></li>
             <a class="nav-link" href="/cart"><img src="/images/cart.svg"></a>
           </li>
         </ul>
@@ -124,18 +124,53 @@
             </table>
 
             <% if (order.status === 'Order Placed' || order.status === 'Shipped') { %>
-                <form action="/orders/cancel/<%= order._id %>" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+                <form id="cancelOrderForm-<%= order._id %>" action="/orders/cancel/<%= order._id %>" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-danger btn-sm"  onclick="confirmCancel('<%= order._id %>')">Cancel</button>
                 </form>
             <% } else if (order.status === 'Delivered') { %>
-                <form action="/orders/return/<%= order._id %>" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-warning btn-sm">Return</button>
+                <form id="returnOrderForm-<%= order._id %>" action="/orders/return/<%= order._id %>" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-warning btn-sm" onclick="confirmReturn('<%= order._id %>')">Return</button>
                 </form>
             <% } %>
         </div>
     </div>
 
+    <script>
+        function confirmCancel(orderId) {
+            event.preventDefault()
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, cancel it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(`cancelOrderForm-${orderId}`).submit();
+                }
+            });
+        }
     
+        function confirmReturn(orderId) {
+            event.preventDefault()
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#f39c12',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, return it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(`returnOrderForm-${orderId}`).submit();
+                }
+            });
+        }
+    </script>
+     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/js/bootstrap.bundle.min.js"></script>
     <script src="/js/custom.js"></script>
 </body>

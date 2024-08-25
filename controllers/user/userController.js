@@ -4,6 +4,7 @@ const nodemailer=require("nodemailer")
 const bcrypt=require("bcrypt")
 const Product=require("../../models/productSchema")
 const Category=require("../../models/categorySchema")
+const Offer=require("../../models/OfferSchema")
 //load home page
 const loadHomepage=async(req,res)=>{
     try {
@@ -87,7 +88,7 @@ try {
 }
 const signup= async(req,res)=>{
    try {
-    const {name,email,phone, password, cPassword}=req.body
+    const {name,email,phone, password, cPassword,referralCode}=req.body
     if(password!==cPassword){
         return res.render("signup",{message:"Password do not match"})
     }
@@ -95,6 +96,24 @@ const signup= async(req,res)=>{
     const findUser= await User.findOne({email})
     if(findUser){
         return res.render("signup",{message:"User with this email already exists"})
+    }
+
+    
+    const activeOffer = await Offer.findOne({ isActive: true });
+    if (!activeOffer) {
+        return res.render("signup", { message: "Referral offer is not currently active." });
+    }
+
+    let referrer = null;
+    if (referralCode) {
+        referrer = await User.findOne({ referralCode: referralCode });
+        if (!referrer) {
+            return res.render("signup", { message: "Invalid referral code" });
+        }
+       
+        // Update referrer's wallet if the referral code matches and the offer is active
+        referrer.wallet += activeOffer.creditAmount;
+        await referrer.save();
     }
 
     const otp=generateOtp()
@@ -125,6 +144,8 @@ const securePassword=async (password)=>{
     }
 }
 
+
+
 const verifyotp=async(req,res)=>{
     try {
         const {otp}=req.body
@@ -132,11 +153,32 @@ const verifyotp=async(req,res)=>{
         if(otp===req.session.userOtp){
             const user=req.session.userData
             const passwordHash=await securePassword(user.password)
+
+            async function generateReferralCode(length) {
+                const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                let referralCode = '';
+
+                for (let i = 0; i < length; i++) {
+                    const randomIndex = Math.floor(Math.random() * characters.length);
+                    referralCode += characters[randomIndex];
+                }
+
+                const userCount = await User.countDocuments(); // Assuming you use Mongoose
+                referralCode += userCount.toString();
+
+                return referralCode;
+            }
+
+            // Generate referral code
+            const referralCode = await generateReferralCode(4);
+
+
             const saveUserData=new User({
                 name:user.name,
                 email:user.email,
                 phone:user.phone,
-                password:passwordHash
+                password:passwordHash,
+                referralCode: referralCode
             })
 
             await saveUserData.save()

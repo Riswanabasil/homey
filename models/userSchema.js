@@ -44,17 +44,21 @@ const userSchema= new mongoose.Schema({
         {
             productId: { type: Schema.Types.ObjectId, ref: 'Product' }
         }
-    ]
-    // }],
-    // wallet:{
-    //     type:Schema.Types.ObjectId,
-    //     ref:"Wallet",
-    //     default:0
-    // },
-    // createdOn:{
-    //     type:Date,
-    //     default:Date.now
-    // },
+    ],  
+    wallet: {
+        type: Number,
+        default: 0,
+    },
+    referralCode:{
+        type:String,
+        unique:true,
+        index:true
+    },
+    createdOn:{
+        type:Date,
+        default:Date.now
+    },
+    
     // searchHistory:[{
     //     category:{
     //         type:Schema.Types.ObjectId,

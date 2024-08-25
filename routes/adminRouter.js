@@ -7,6 +7,8 @@ const productController=require("../controllers/admin/productController")
 const admin=require('../middlewares/authMiddleware')
 const ordersController=require('../controllers/admin/ordersController')
 const couponController=require('../controllers/admin/couponController')
+const offerController=require('../controllers/admin/offerController')
+const salesController=require('../controllers/admin/salesController')
 
 // admin router
 router.get("/",adminController.loadLogin)
@@ -50,6 +52,17 @@ router.post('/coupons/add',couponController.addCoupon)
 router.get('/coupons/edit/:id', couponController.editCouponForm);
 router.post('/coupons/edit/:id', couponController.updateCoupon);
 router.post('/coupons/delete/:couponId', couponController.deleteCoupon)
+
+//offer
+router.get('/referral',admin.isAdmin, offerController.viewOffer)
+router.post('/update-offer',offerController.referralOffer)
+
+//sales
+
+router.get('/sales-report',admin.isAdmin,salesController.loadSales)
+router.get('/fetch-sales-data',salesController.fetchSalesData)
+router.get('/download-sales-report-pdf', salesController.downloadPdf)
+router.get('/path-to-excel-download',salesController.downloadExcel)
 
 
 module.exports=router

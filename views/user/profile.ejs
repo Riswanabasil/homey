@@ -64,6 +64,8 @@
             <p class="card-text">Email: <%= user.email %></p>
             <p class="card-text">Phone: <%= user.phone %></p>
             <a href="/edit-profile" class="btn btn-primary">Edit Profile</a>
+            <p class="card-text font-weight-bold mt-3">Wallet Balance: ₹<%= user.wallet.toFixed(2) %></p>
+            <p class="card-text font-weight-bold mt-3">Referral Code: <%= user.referralCode %></p>
         </div>
     </div>
 

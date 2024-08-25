@@ -9,6 +9,12 @@ const loadCheckout = async (req, res) => {
     try {
         const userId = req.session.user;
         const user = await User.findById(userId).populate('addresses');
+        if (user.cart.length === 0) {
+            // Redirect back to the cart page with a flash message or alert if the cart is empty
+            req.flash('error', 'Your cart is empty. Please add products to proceed to checkout.');
+            return res.redirect('/cart');
+        }
+
         const cart = user.cart.map(async (item) => {
             const product = await Product.findById(item.productId);
             return {
@@ -31,7 +37,7 @@ const loadCheckout = async (req, res) => {
 
         const total = subtotal + deliveryFee - discount;
         
-        console.log(req.session.coupon)
+        // console.log(req.session.coupon)
         res.render('checkout', { user, cart: cartItems, subtotal, deliveryFee, total,discount });
     } catch (error) {
         console.error('Error loading checkout page:', error);
@@ -69,12 +75,86 @@ const createRazorpayOrder = async (req, res) => {
 
 
 
-const placeOrder = async (req, res) => {
+// const placeOrder = async (req, res) => {
+//     try {
+//         const userId = req.session.user;
+//         const { addressId, paymentMethod, razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+
+//         const user = await User.findById(userId).populate('cart.productId');
+//         const address = await Address.findById(addressId);
+
+//         if (!address) {
+//             return res.status(400).json({ error: 'Address and payment method are required.' });
+//         }
+
+//         const products = user.cart.map(item => ({
+//             productId: item.productId._id,
+//             quantity: item.quantity,
+//             price: item.productId.salePrice
+//         }));
+
+//         const subtotal = products.reduce((sum, item) => sum + item.price * item.quantity, 0);
+//         const deliveryFee = 70;
+//         const discount = req.session.coupon ? req.session.coupon.discount : 0;
+//         const total = subtotal + deliveryFee - discount;
+
+//         const newOrder = new Order({
+//             user: userId,
+//             products,
+//             address: addressId,
+//             subtotal,
+//             deliveryFee,
+//             discount,
+//             total,
+//             paymentMethod
+//         });
+
+//         if (paymentMethod === 'Razorpay') {
+//             // Save Razorpay payment details if the payment method is Razorpay
+//             newOrder.razorpay = {
+//                 paymentId: razorpay_payment_id,
+//                 orderId: razorpay_order_id,
+//                 signature: razorpay_signature
+//             };
+//         }
+
+//         await newOrder.save();
+
+//         // Decrement the product quantity in the inventory
+//         for (const item of products) {
+//             const product = await Product.findById(item.productId);
+//             if (product) {
+//                 product.quantity -= item.quantity;
+//                 await product.save();
+//             }
+//         }
+
+//         // Clear the user's cart
+//         user.cart = [];
+//         await user.save();
+
+//         delete req.session.coupon
+        
+//         if (paymentMethod === 'Razorpay') {
+//             return res.json({ success: true });
+//         }
+
+//         res.redirect('/thankyou');
+//     } catch (error) {
+//         console.error('Error placing order:', error);
+//         res.status(500).send('Server error');
+//     }
+// };
+
+const placeOrde = async (req, res) => {
     try {
         const userId = req.session.user;
-        const { addressId, paymentMethod, razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+        const { useWallet, addressId, paymentMethod, razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+        
 
         const user = await User.findById(userId).populate('cart.productId');
+        
+
         const address = await Address.findById(addressId);
 
         if (!address) {
@@ -90,7 +170,15 @@ const placeOrder = async (req, res) => {
         const subtotal = products.reduce((sum, item) => sum + item.price * item.quantity, 0);
         const deliveryFee = 70;
         const discount = req.session.coupon ? req.session.coupon.discount : 0;
-        const total = subtotal + deliveryFee - discount;
+         let total = subtotal + deliveryFee - discount;
+
+          let walletDeduction = 0;
+          if (useWallet === true && user.wallet > 0) {
+              walletDeduction = Math.min(user.wallet, total);
+              user.wallet -= walletDeduction;
+              total -= walletDeduction;
+              await user.save();
+          }
 
         const newOrder = new Order({
             user: userId,
@@ -129,11 +217,101 @@ const placeOrder = async (req, res) => {
 
         delete req.session.coupon
         
-        if (paymentMethod === 'Razorpay') {
+        
             return res.json({ success: true });
+
+        
+    } catch (error) {
+        console.error('Error placing order:', error);
+        res.status(500).send('Server error');
+    }
+};
+
+const placeOrder = async (req, res) => {
+    try {
+        const userId = req.session.user;
+        const { useWallet, addressId, paymentMethod, razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+
+        const user = await User.findById(userId).populate({
+            path: 'cart.productId',
+            populate: { path: 'category' } 
+        });
+
+        const address = await Address.findById(addressId);
+        if (!address) {
+            return res.status(400).json({ error: 'Address and payment method are required.' });
         }
 
-        res.redirect('/thankyou');
+        let subtotal = 0;
+        const products = user.cart.map(item => {
+            const product = item.productId;
+            const categoryOffer = product.category ? product.category.offer : 0;
+            const productOffer = product.productOffer;
+            const bestOffer = Math.max(categoryOffer, productOffer);
+
+            const discountedPrice = product.salePrice - (product.salePrice * bestOffer / 100);
+            const totalPriceForProduct = discountedPrice * item.quantity;
+
+            subtotal += totalPriceForProduct;
+
+            return {
+                productId: product._id,
+                quantity: item.quantity,
+                price: discountedPrice ,// Store discounted price per unit
+                appliedOffer: bestOffer
+            };
+        });
+
+        const deliveryFee = 70;
+        const discount = req.session.coupon ? req.session.coupon.discount : 0;
+        let total = subtotal + deliveryFee - discount;
+
+        let walletDeduction = 0;
+        if (useWallet === true && user.wallet > 0) {
+            walletDeduction = Math.min(user.wallet, total);
+            user.wallet -= walletDeduction;
+            total -= walletDeduction;
+            await user.save();
+        }
+
+        const newOrder = new Order({
+            user: userId,
+            products,
+            address: addressId,
+            subtotal,
+            deliveryFee,
+            discount,
+            total,
+            paymentMethod
+        });
+
+        if (paymentMethod === 'Razorpay') {
+            newOrder.razorpay = {
+                paymentId: razorpay_payment_id,
+                orderId: razorpay_order_id,
+                signature: razorpay_signature
+            };
+        }
+
+        await newOrder.save();
+
+        // Decrement the product quantity in the inventory
+        for (const item of products) {
+            const product = await Product.findById(item.productId);
+            if (product) {
+                product.quantity -= item.quantity;
+                await product.save();
+            }
+        }
+
+        // Clear the user's cart
+        user.cart = [];
+        await user.save();
+
+        delete req.session.coupon;
+        
+        return res.json({ success: true });
+
     } catch (error) {
         console.error('Error placing order:', error);
         res.status(500).send('Server error');

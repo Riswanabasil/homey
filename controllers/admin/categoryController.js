@@ -10,9 +10,9 @@ const getCategories=async (req, res) => {
 };
 
 const addCategory=async(req,res)=>{
-    const {name}=req.body;
+    const {name,offer}=req.body;
     try{
-        const newCategory=new Category({name})
+        const newCategory=new Category({name,offer})
         await newCategory.save()
         res.redirect('/admin/Category')
     }
@@ -22,9 +22,9 @@ const addCategory=async(req,res)=>{
 }
 
 const editCategory=async(req,res)=>{
-    const {id,name}=req.body
+    const {id,name,offer}=req.body
     try{
-        await Category.findByIdAndUpdate(id,{name})
+        await Category.findByIdAndUpdate(id,{name,offer})
         res.redirect('/admin/category')
     }
     catch(error){

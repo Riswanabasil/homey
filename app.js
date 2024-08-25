@@ -23,6 +23,11 @@ app.use(session({
     }
 }))
 app.use(flash())
+app.use((req, res, next) => {
+    res.locals.success = req.flash('success');
+    res.locals.error = req.flash('error');
+    next();
+});
 app.use(passport.initialize())
 app.use(passport.session())
 // app.use((req,res,next)=>{
@@ -75,6 +80,10 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 app.use("/",userRouter)
 app.use("/admin",adminRouter)
+
+// app.listen(3000,()=>{
+//     console.log("server running")
+// })
 
 app.listen(process.env.PORT,()=>{
     console.log("server is running");
