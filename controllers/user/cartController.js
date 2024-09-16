@@ -7,14 +7,22 @@ const viewCart = async (req, res) => {
     try {
       const userId = req.session.user;
       const user = await User.findById(userId).populate('cart.productId');
-  
+
+      user.cart=user.cart.filter(item=>{
+        if(item.productId.isBlocked||item.productId.quantity===0){
+            return false
+        }
+        return true
+      })
+  user.save()
       let subtotal = 0;
       user.cart.forEach(item => {
         subtotal += item.productId.salePrice * item.quantity;
       });
   
-      const total = subtotal;
-      res.render('cart', { cart: user.cart, subtotal, total, session: req.session  });
+      let total = subtotal;
+      
+      res.render('cart', { cart: user.cart, subtotal, total });
     } catch (error) {
       console.error(error);
       res.status(500).send('Server error');
@@ -89,18 +97,18 @@ const updateCartQuantity = async (req, res) => {
             if (quantity > 5) {
                 return res.json({ success: false, message: 'You cannot add more than 5 units of this product to your cart' });
             }
+            if(quantity>product.quantity){
+                return res.json({success:false, message:`Only ${product.quantity} products left` })
+            }
             productInCart.quantity = quantity;
         } else {
-            // if (quantity < 1) {
-            //     return res.json({ success: false, message: 'Not enough stock available' });
-            // }
-            
             user.cart.push({ productId, quantity });
         }
-
-       
+        
 
         await user.save();
+
+       
         
 
         return res.json({ success: true, message: 'Cart updated successfully' });
@@ -135,6 +143,14 @@ const applyCoupon=async(req,res)=>{
 
         const user= await User.findById(userId).populate('cart.productId')
         const subtotal=user.cart.reduce((sum,item)=>sum+item.quantity*item.productId.salePrice,0)
+
+        if (subtotal < coupon.minimumPurchase) {
+            return res.status(400).json({ 
+                success: false, 
+                message: `Subtotal must be at least ${coupon.minimumPurchase} to use this coupon.` 
+            });
+        } 
+        
         const discount=coupon.value
         const total=subtotal-discount
 

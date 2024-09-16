@@ -46,7 +46,7 @@ const fetchSalesData = async (req, res) => {
             totalSales += 1;
             order.products.forEach(product => {
                 totalAmount += product.price * product.quantity;
-                totalDiscount += product.appliedOffer; // Assuming this calculates to the discount amount somehow
+                totalDiscount += product.appliedOffer; 
             });
         });
 
@@ -122,7 +122,7 @@ async function getOrders(startDate, endDate, period) {
 
 
 
-const downloadPdf=async (req, res) => {
+const downloadPd=async (req, res) => {
     const { startDate, endDate, period } = req.query;
 
     try {
@@ -157,6 +157,82 @@ const downloadPdf=async (req, res) => {
         res.status(500).send('Server error occurred while generating the PDF');
     }
 };
+
+const downloadPdf = async (req, res) => {
+    const { startDate, endDate, period } = req.query;
+
+    try {
+        const orders = await getOrders(startDate, endDate, period);
+
+        if (!orders || orders.length === 0) {
+            return res.status(404).send("No orders found for the specified criteria.");
+        }
+        
+        const doc = new PDFDocument({ margin: 50 });
+        res.setHeader('Content-Disposition', 'attachment; filename="sales-report.pdf"');
+        res.setHeader('Content-Type', 'application/pdf');
+        doc.pipe(res);
+
+        doc.fontSize(16).text('Sales Report', { align: 'center' });
+        doc.moveDown(2);
+
+        // Adjusting column positions further based on feedback
+        // const columnPositions = {
+        //     date: 50,
+        //     orderId: 120,
+        //     product: 270,
+        //     quantity: 380, 
+        //     price: 480 
+        // };
+
+        const columnPositions = {
+            date: 50,
+            orderId: 150,
+            product: 300,
+            quantity: 420,
+            price: 480
+        };
+
+
+        // Headers
+        doc.fontSize(12);
+        doc.text('Date', columnPositions.date, 80);
+        doc.text('Order ID', columnPositions.orderId, 80);
+        doc.text('Product', columnPositions.product, 80);
+        doc.text('Quantity', columnPositions.quantity, 80);
+        doc.text('Price', columnPositions.price, 80);
+        doc.moveDown();
+
+        // Line below headers
+        // doc.moveTo(50, doc.y).lineTo(650, doc.y).stroke();
+
+        doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke();
+        doc.moveDown(0.5);
+
+        // Order data
+        orders.forEach(order => {
+            doc.fontSize(10);
+            order.products.forEach(product => {
+                const currentY = doc.y;
+                doc.text(order.date, columnPositions.date,currentY);
+                doc.text(order.orderId, columnPositions.orderId,currentY);
+                doc.text(product.name, columnPositions.product,currentY);
+                doc.text(product.quantity.toString(), columnPositions.quantity,currentY);
+                let total = product.total ? `${product.total.toFixed(2)}` : 'N/A';
+                doc.text(total, columnPositions.price,currentY);
+                doc.moveDown(0.5);
+            });
+            doc.moveDown(1);
+        });
+
+        doc.end();
+    } catch (error) {
+        console.error('Error generating PDF:', error);
+        res.status(500).send('Server error occurred while generating the PDF');
+    }
+};
+
+
 
 const downloadExcel = async (req, res) => {
     const { startDate, endDate, period } = req.query;

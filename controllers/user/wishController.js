@@ -26,9 +26,14 @@ const addToWishlist = async (req, res) => {
 
 const viewWishlist = async (req, res) => {
     try {
+        let cartCount = null;
+        if (req.session.user) {
+            const user = await User.findById(req.session.user);
+            cartCount = user.cart.reduce((acc, item) => acc + item.quantity, null);
+        }
         const user = await User.findById(req.session.user).populate('wishlist.productId');
 
-        res.render('wishlist', { wishlist: user.wishlist });
+        res.render('wishlist', { wishlist: user.wishlist,cartCount });
     } catch (error) {
         console.error('Error loading wishlist:', error);
         res.status(500).send('Server error');

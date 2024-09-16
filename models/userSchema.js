@@ -49,6 +49,12 @@ const userSchema= new mongoose.Schema({
         type: Number,
         default: 0,
     },
+    walletTransactions: [{
+        date: { type: Date, default: Date.now },
+        type: { type: String, enum: ['credit', 'debit'] },
+        amount: { type: Number },
+        description: { type: String }
+    }],
     referralCode:{
         type:String,
         unique:true,

@@ -52,6 +52,7 @@ router.post('/coupons/add',couponController.addCoupon)
 router.get('/coupons/edit/:id', couponController.editCouponForm);
 router.post('/coupons/edit/:id', couponController.updateCoupon);
 router.post('/coupons/delete/:couponId', couponController.deleteCoupon)
+router.get('/check-coupon-name', couponController.checkName)
 
 //offer
 router.get('/referral',admin.isAdmin, offerController.viewOffer)

@@ -97,6 +97,7 @@
         <a href="/admin/product">Product</a>
         <a href="/admin/user">User</a>
         <a href="/admin/referral">Offer</a>
+        <a href="/admin/sales-report">Sales</a>
     </div>
 
     <div class="content">
@@ -129,6 +130,15 @@
                 <% }) %>
             </tbody>
         </table>
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center">
+                <% for(let i = 1; i <= totalPages; i++) { %>
+                    <li class="page-item <%= i === page ? 'active' : '' %>">
+                        <a class="page-link" href="/admin/orders?page=<%= i %>"><%= i %></a>
+                    </li>
+                <% } %>
+            </ul>
+        </nav>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>

@@ -10,7 +10,7 @@ const isAdmin=(req,res,next)=>{
 const isUserBlocked = async (req, res, next) => {
     if (req.session && req.session.user) {
        try {
-        const user = await User.findById(req.session.user._id);
+        const user = await User.findById(req.session.user);
         if (user && user.isBlocked) {
           console.log('User is blocked:', user);
           req.session.destroy((err) => {
@@ -33,7 +33,13 @@ const isUserBlocked = async (req, res, next) => {
     if (req.session && req.session.user) {
         return next();
     }
-    return res.redirect('/login'); 
+    return res.redirect('/login')
+  //   return res.send(`
+  //     <script>
+  //         alert("Please log in to your account.");
+  //         window.location.href = "/login";
+  //     </script>
+  // `);
 };
 
 const checkProductBlocked = async (req, res, next) => {

@@ -5,8 +5,13 @@ const Address=require('../../models/addressSchema')
 
 const loadProfile = async (req, res) => {
     try {
+      let cartCount = '';
+      if (req.session.user) {
+          const user = await User.findById(req.session.user);
+          cartCount = user.cart.reduce((acc, item) => acc + item.quantity, '');
+      }
         const user = await User.findById(req.session.user).populate('addresses').exec()
-        res.render('profile', { user ,message:''});
+        res.render('profile', { user ,message:'',cartCount});
     } catch (error) {
         console.error('Error loading profile:', error);
         res.status(500).send('Server error');

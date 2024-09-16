@@ -17,7 +17,7 @@ const upload = multer({
     fileFilter: (req, file, cb) => {
         checkFileType(file, cb);
     }
-}).array('productImage', 3); 
+}).array('files[]',5); 
 
 function checkFileType(file, cb) {
     const filetypes = /jpeg|jpg|png|gif|avif|webp/;
@@ -30,16 +30,6 @@ function checkFileType(file, cb) {
         cb('Error: Images Only!');
     }
 }
-
-// exports.getProductPage = async (req, res) => {
-//     try {
-//         const products = await Product.find().populate('category');
-//         res.render('product', { products });
-//     } catch (error) {
-//         console.error('Error fetching products:', error);
-//         res.redirect('/admin/dashboard');
-//     }
-// };
 
 exports.getProductPage = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
@@ -88,7 +78,7 @@ exports.addProduct = (req, res) => {
             try {
                 const { productName, description, category, regularPrice, salePrice, productOffer, quantity } = req.body;
                 const productImages = req.files.map(file => '/uploads/' + file.filename);
-
+                console.log(req.files);
                 const newProduct = new Product({
                     productName,
                     description,
@@ -102,7 +92,8 @@ exports.addProduct = (req, res) => {
                 });
 
                 await newProduct.save();
-                res.redirect('/admin/product');
+                res.redirect('/admin/product')
+                
             } catch (error) {
                 console.error('Error adding product:', error);
                 res.redirect('/admin/product');
@@ -119,7 +110,6 @@ exports.editProduct = (req, res) => {
         } else {
             try {
                 const { productName, description, author, category, regularPrice, salePrice, productOffer, quantity } = req.body;
-                // const productImages = req.files.length ? req.files.map(file => '/uploads/' + file.filename) : undefined;
 
                 const product = await Product.findById(req.params.id);
 
@@ -127,8 +117,14 @@ exports.editProduct = (req, res) => {
                     return res.redirect('/admin/product');
                 }
 
-                // If new images are uploaded, use them. Otherwise, keep the existing images.
-                const productImages = req.files.length ? req.files.map(file => '/uploads/' + file.filename) : product.productImage;
+
+                let productImages = product.productImage;
+
+                // Add new images to the existing array
+                if (req.files && req.files.length > 0) {
+                    const newImages = req.files.map(file => '/uploads/' + file.filename);
+                    productImages = [...productImages, ...newImages];
+                }
 
                 product.productName = productName;
                 product.description = description;

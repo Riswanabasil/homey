@@ -6,17 +6,31 @@ const Product=require("../../models/productSchema")
 const Category=require("../../models/categorySchema")
 const Offer=require("../../models/OfferSchema")
 //load home page
-const loadHomepage=async(req,res)=>{
-    try {
-        return res.render("home")
-    } catch (error) {
-        console.log("home page is not loading",error);
-        res.status(500).send("server error")
-    }
-}
+// const loadHomepage=async(req,res)=>{
+//     try {
+//         return res.render("home")
+//     } catch (error) {
+//         console.log("home page is not loading",error);
+//         res.status(500).send("server error")
+//     }
+// }
 // load signup
+
+const loadHomepage = async (req, res) => {
+    try {
+        const products = await Product.find({}).limit(3).exec();  
+
+        return res.render("home", { products });  
+    } catch (error) {
+        console.log("Home page is not loading", error);
+        res.status(500).send("Server error");
+    }
+};
 const loadSignup= async(req,res)=>{
     try {
+        if (req.session.user) { 
+            return res.redirect('/shop'); 
+        }
         return res.render("signup",{message:""})
     } catch (error) {
         console.log("signup page is not loading",error);
@@ -27,6 +41,9 @@ const loadSignup= async(req,res)=>{
 
 const loadLogin=async(req,res)=>{
     try {
+        if (req.session.user) { 
+            return res.redirect('/shop'); 
+        }
         return res.render("login",{message:""})
     } catch (error) {
         console.log("signup page is not loading",error);
@@ -49,7 +66,7 @@ const login=async (req,res)=>{
             return res.render("login",{message:"Incorrect username or password"})
         }
         req.session.user = findUser._id.toString();
-        
+       
         res.redirect("/shop")
     } catch (error) {
         console.error("login error",error)
@@ -113,6 +130,12 @@ const signup= async(req,res)=>{
        
         // Update referrer's wallet if the referral code matches and the offer is active
         referrer.wallet += activeOffer.creditAmount;
+        referrer.walletTransactions.push({
+            date: new Date(), 
+            type: 'credit',  
+            amount: activeOffer.creditAmount,  
+            description: 'Promotional credit'
+        });
         await referrer.save();
     }
 
@@ -218,6 +241,11 @@ const resendOtp=async(req,res)=>{
 
 const loadShop = async (req, res) => {
     try {
+        let cartCount = '';
+    if (req.session.user) {
+        const user = await User.findById(req.session.user);
+        cartCount = user.cart.reduce((acc, item) => acc + item.quantity, '');
+    }
         const categories = await Category.find({ isListed: true });
         const categoryFilter = req.query.category;
         const sortOption = req.query.sort || '';
@@ -277,6 +305,8 @@ const loadShop = async (req, res) => {
         // Filter out products with unlisted categories
         products = products.filter(product => product.category);
 
+        const isEmptyResults = products.length === 0;
+
         return res.render('shop', { 
             products, 
             categories, 
@@ -284,7 +314,8 @@ const loadShop = async (req, res) => {
             currentPage: page, 
             totalPages: Math.ceil(count / limit),
             categoryFilter,
-            searchTerm
+            isEmptyResults,
+            searchTerm,cartCount
         });
     } catch (error) {
         console.log('shop page is not loading', error);
@@ -296,13 +327,18 @@ const loadShop = async (req, res) => {
   
 const getProductDetails=async (req, res) => {
     try {
+        let cartCount = null;
+    if (req.session.user) {
+        const user = await User.findById(req.session.user);
+        cartCount = user.cart.reduce((acc, item) => acc + item.quantity, null);
+    }
         const product = await Product.findById(req.params.id).populate('category');
         if (!product || product.isBlocked) {
             return res.redirect('/shop');
           }
         const relatedProducts = await Product.find({ category: product.category, _id: { $ne: product._id } }).limit(5);
         const user= await User.findById(req.session.user).populate('wishlist')
-        res.render('detail', { product, relatedProducts,user });
+        res.render('detail', { product, relatedProducts,user,cartCount });
     } catch (error) {
         console.error('Error fetching product detail:', error);
         res.redirect('/');

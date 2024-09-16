@@ -33,7 +33,7 @@ router.get('/auth/google', passport.authenticate('google', {
       res.redirect('/shop');
     }
   );
-  router.get("/profile", isAuthenticated, profileController.loadProfile)
+  router.get("/profile",isUserBlocked, isAuthenticated, profileController.loadProfile)
   router.get("/edit-profile", profileController.loadEditProfile)
   router.post("/update-profile", profileController.updateProfile)
   router.post("/profile/verify-password", profileController.verifyPassword);
@@ -42,10 +42,12 @@ router.post('/add-address',profileController.addAddress)
 router.get('/edit-address/:id', profileController.loadEditAddress);
 router.post('/edit-address/:id', profileController.editAddress);
 router.delete('/delete-address/:id', profileController.removeAddress);
-router.get('/orders', isAuthenticated, ordersController.getOrderHistory);
+router.get('/orders',isUserBlocked, isAuthenticated, ordersController.getOrderHistory);
 router.get('/orders/view/:orderId', ordersController.viewOrder)
 router.post('/orders/cancel/:id', isAuthenticated, ordersController.cancelOrder);
 router.post('/orders/return/:id', isAuthenticated, ordersController.returnOrder);
+router.get('/orders/invoice/:orderId', isAuthenticated, ordersController.downloadInvoice);
+router.post('/retry-payment/:orderId',checkoutController.retryPayment)
 
 
 router.get('/cart', isAuthenticated, cartController.viewCart);
@@ -57,6 +59,7 @@ router.get('/checkout', isAuthenticated, checkoutController.loadCheckout);
 router.post('/place-order', isAuthenticated, checkoutController.placeOrder)
 router.get('/thankyou', isAuthenticated, checkoutController.loadThankyou);
 router.post('/create-razorpay-order', isAuthenticated, checkoutController.createRazorpayOrder);
+router.post('/place-order-again', isAuthenticated, checkoutController. processOrder)
 
 router.get('/edit-address1/:id', profileController.loadEditAddress1);
 router.post('/edit-address1/:id', profileController.editAddress1);

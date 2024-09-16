@@ -65,12 +65,12 @@
               <li><a class="dropdown-item" href="/shop?sort=z-a&category=<%= categoryFilter %>&search=<%= searchTerm %>">Z - A</a></li>
             </ul>
           </li>
-          <li><a class="nav-link" href="/logout">Logout</a></li>
+          <!-- <li><a class="nav-link" href="/logout">Logout</a></li> -->
         </ul>
 
         <ul class="custom-navbar-cta navbar-nav mb-2 mb-md-0 ms-5">
           <li><a class="nav-link" href="/profile"><img src="images/user.svg"></a></li>
-          <li><a class="nav-link" href="/cart"><img src="images/cart.svg"></a></li>
+          <li><a class="nav-link" href="/cart"><img src="images/cart.svg"><span class="badge badge-pill badge-warning" id="cart-count"><%= cartCount %></span></a></li>
         </ul>
       </div>
     </div>
@@ -80,6 +80,11 @@
 
   <!-- Start Search Form -->
   <div class="container my-4">
+    <% if (isEmptyResults) { %>
+      <div class="alert alert-warning">
+          No products found. Try adjusting your search or filter options.
+      </div>
+  <% }%>
     <form action="/shop" method="get">
       <div class="input-group">
         <input type="text" class="form-control" placeholder="Search products..." name="search" value="<%= searchTerm %>">

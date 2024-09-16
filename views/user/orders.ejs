@@ -51,32 +51,27 @@
       <table class="table table-bordered">
         <thead>
           <tr>
-            <th>Order ID</th>
+            <th>Products</th>
             <th>Date</th>
             <th>Total</th>
             <th>Status</th>
+            <th>Payment Status</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           <% orders.forEach(order => { %>
             <tr>
-              <td><%= order.orderId %></td>
+              <td>
+                <% order.products.forEach(product => { %> <!-- Loop through products in the order -->
+                  <%= product.productId.productName %><br> <!-- Assuming productId is populated with product details -->
+                <% }) %>
+              </td>
               <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
              
-              <td>₹<%= order.total %></td>
+              <td>₹<%= order.total.toFixed(2) %></td>
               <td><%= order.status %></td>
-              <!-- <td>
-                <% if (order.status === 'Order Placed' || order.status === 'Shipped') { %>
-                  <form action="/orders/cancel/<%= order._id %>" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
-                  </form>
-                <% } else if (order.status === 'Delivered') { %>
-                  <form action="/orders/return/<%= order._id %>" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-warning btn-sm">Return</button>
-                  </form>
-                <% } %>
-              </td> -->
+              <td><%= order.paymentStatus %></td>
               <td>
                 <a href="/orders/view/<%= order._id %>" class="btn btn-primary btn-sm">View</a>
             </td>
@@ -84,6 +79,15 @@
           <% }) %>
         </tbody>
       </table>
+      <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-center">
+            <% for(let i = 1; i <= totalPages; i++) { %>
+                <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                    <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+                </li>
+            <% } %>
+        </ul>
+    </nav>
     <% } else { %>
       <p>No orders found.</p>
     <% } %>

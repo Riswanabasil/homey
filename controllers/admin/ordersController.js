@@ -3,9 +3,14 @@ const Product=require('../../models/productSchema')
 const Order=require('../../models/orderSchema')
 
 const listOrders = async (req, res) => {
+    const page= parseInt(req.query.page)||1
+    const limit= parseInt(req.query.limit)||10
+    const skipIndex=(page-1)*limit
     try {
-        const orders = await Order.find().populate('user').sort({ createdAt: -1 });
-        res.render('adminOrders', { orders });
+        const totalOrders= await Order.countDocuments()
+        const orders = await Order.find().populate('user').sort({ createdAt: -1 }).limit(limit).skip(skipIndex);
+        res.render('adminOrders', { orders,page,
+            totalPages: Math.ceil(totalOrders / limit) });
     } catch (error) {
         console.error('Error fetching orders:', error);
         res.status(500).send('Server error');

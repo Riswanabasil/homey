@@ -60,24 +60,49 @@ const orderSchema = new mongoose.Schema({
         required: true,
         enum: ['COD', 'Razorpay','Wallet']
     },
+    // razorpay: {
+    //     orderId: {
+    //         type: String,
+    //         required: function() { return this.paymentMethod === 'Razorpay'; }
+    //     },
+    //     paymentId: {
+    //         type: String,
+    //         required: function() { return this.paymentMethod === 'Razorpay'; }
+    //     },
+    //     signature: {
+    //         type: String,
+    //         required: function() { return this.paymentMethod === 'Razorpay'; }
+    //     }
+    // },
     razorpay: {
-        orderId: {
-            type: String,
-            required: function() { return this.paymentMethod === 'Razorpay'; }
-        },
         paymentId: {
             type: String,
-            required: function() { return this.paymentMethod === 'Razorpay'; }
+            required: function() {
+                return this.paymentMethod === 'Razorpay' && this.paymentStatus === 'Completed';
+            }
+        },
+        orderId: {
+            type: String,
+            required: function() {
+                return this.paymentMethod === 'Razorpay' && this.paymentStatus === 'Completed';
+            }
         },
         signature: {
             type: String,
-            required: function() { return this.paymentMethod === 'Razorpay'; }
+            required: function() {
+                return this.paymentMethod === 'Razorpay' && this.paymentStatus === 'Completed';
+            }
         }
+    },
+    paymentStatus: {  
+        type: String,
+        default: 'Pending',
+        enum: ['Pending', 'Completed', 'Failed']
     },
     status: {
         type: String,
         default: 'Order Placed',
-        enum: ['Order Placed', 'Shipped', 'Delivered', 'Cancelled','Returned']
+        enum: ['Order Placed', 'Shipped', 'Delivered', 'Cancelled','Returned','Payment Failed']
     },
     statusHistory: [
         {

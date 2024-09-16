@@ -85,7 +85,7 @@
                           <div class="input-group-prepend">
                               <button class="btn btn-outline-black decrease" type="button" onclick="updateCart('<%= item.productId._id %>', '<%= item.quantity - 1 %>')">&minus;</button>
                           </div>
-                          <input type="text" class="form-control text-center quantity-amount" name="quantity" size="5" value="<%= item.quantity %>" readonly>
+                          <input type="text" class="form-control text-center quantity-amount"  id="quantity-<%= item.productId._id %>" name="quantity" size="5" value="<%= item.quantity %>" readonly>
                           <div class="input-group-append">
                               <button class="btn btn-outline-black increase" type="button" onclick="updateCart('<%= item.productId._id %>', '<%= item.quantity + 1 %>')">&plus;</button>
                           </div>
@@ -120,27 +120,8 @@
                 <a href="/shop" class="btn btn-outline-black btn-sm btn-block">Continue Shopping</a>
             </div>
           </div>
-          <div class="row">
-            <div class="col-md-12">
-              <label class="text-black h4" for="coupon">Coupon</label>
-              <p>Enter your coupon code if you have one.</p>
-            </div>
-            <div class="col-md-8 mb-3 mb-md-0">
-              <input type="text" class="form-control py-3" id="coupon" placeholder="Coupon Code">
-            </div>
-            <div class="col-md-4">
-              <button class="btn btn-black" id="applyCouponBtn">Apply Coupon</button>
-            </div>
-            <% if (session.coupon) { %>
-              <div class="row mt-3">
-                  <div class="col-md-12">
-                      <p class="text-success">Coupon "<%= session.coupon.code %>" applied. Discount: ₹<%= session.coupon.discount %></p>
-                      <button class="btn btn-danger" id="removeCouponBtn">Remove Coupon</button>
-                  </div>
-              </div>
-          <% } %>
-          
-          </div>
+         
+        
         </div>
         <div class="col-md-6 pl-5">
           <div class="row justify-content-end">
@@ -150,21 +131,21 @@
                   <h3 class="text-black h4 text-uppercase">Cart Totals</h3>
                 </div>
               </div>
-              <div class="row mb-3">
+              <!-- <div class="row mb-3">
                 <div class="col-md-6">
                   <span class="text-black">Subtotal</span>
                 </div>
-                <div class="col-md-6 text-right">
-                  <strong class="text-black">₹<%= subtotal %></strong>
+                <div  class="col-md-6 text-right">
+                  <strong id="cartTotal" class="text-black">₹<%= subtotal %></strong>
                 </div>
-              </div>
+              </div> -->
               <div class="row mb-5">
                 <div class="col-md-6">
                   <span class="text-black">Total</span>
                 </div>
                 <div class="col-md-6 text-right">
                   <!-- <strong class="text-black">₹<%= total %></strong> -->
-                  <strong class="text-black"> ₹<%= session.coupon ? session.coupon.total : subtotal %></strong>
+                  <strong class="text-black"> ₹<%= subtotal %></strong>
                 </div>
               </div>
               <div class="row">
@@ -192,10 +173,14 @@
       .then(response => response.json())
       .then(data => {
           if (data.success) {
+
+            
               Swal.fire({
                   icon: 'success',
                   title: 'Success',
                   text: data.message,
+                  showConfirmButton: false,
+                  timer: 1500
               }).then(() => {
                   window.location.reload();
               });
@@ -217,6 +202,7 @@
       });
   }
 </script>
+
 <script>
    document.getElementById('applyCouponBtn').addEventListener('click', async function() {
         const couponCode = document.getElementById('coupon').value;
@@ -231,7 +217,7 @@
         
         const result = await response.json();
         if (result.success) {
-            // Refresh the page or update the UI with the new total
+            
             window.location.reload();
         } else {
             alert(result.message);
@@ -245,7 +231,7 @@
 
         const result = await response.json();
         if (result.success) {
-            // Refresh the page or update the UI to remove the discount
+            
             window.location.reload();
         } else {
             alert(result.message);

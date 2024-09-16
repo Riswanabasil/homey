@@ -32,7 +32,7 @@
                 </ul>
                 <ul class="custom-navbar-cta navbar-nav mb-2 mb-md-0 ms-5">
                     <li><a class="nav-link" href="/profile"><img src="/images/user.svg"></a></li>
-                    <li><a class="nav-link" href="/cart"><img src="/images/cart.svg"></a></li>
+                    <li><a class="nav-link" href="/cart"><img src="/images/cart.svg"><span class="badge badge-pill badge-warning" id="cart-count"><%= cartCount %></span></a></li>
                 </ul>
             </div>
         </div>
@@ -94,6 +94,36 @@
                             </div>
                     </div>
 
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label class="text-black h4" for="coupon">Coupon</label>
+                            <p>Enter your coupon code if you have one, or select from available coupons:</p>
+                        </div>
+                        <div class="col-md-8 mb-3 mb-md-0">
+                            <!-- Dropdown to list available coupons -->
+                            <select class="form-control py-3" id="coupon">
+                                <option value="">Select a coupon</option>
+                                <% coupons.forEach(coupon => { %>
+                                    <option value="<%= coupon.name %>" <%= session.coupon && session.coupon.code === coupon.name ? 'selected' : '' %>>
+                                        <%= coupon.name %> - <%= coupon.value %>₹ Off
+                                    </option>
+                                <% }) %>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-black" id="applyCouponBtn">Apply Coupon</button>
+                        </div>
+                    
+                        <% if (session.coupon) { %>
+                            <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <p class="text-success">Coupon "<%= session.coupon.code %>" applied. Discount: ₹<%= session.coupon.discount %></p>
+                                    <button class="btn btn-danger" id="removeCouponBtn">Remove Coupon</button>
+                                </div>
+                            </div>
+                        <% } %>
+                    </div>
+
                 </div>
                 <div class="col-md-6">
                     <div class="p-3 p-lg-5 border bg-white">
@@ -126,24 +156,18 @@
                                 </tr>
                                 <tr>
                                     <td class="text-black font-weight-bold"><strong>Order Total</strong></td>
-                                    <td class="text-black font-weight-bold"><strong>₹<%= total %></strong></td>
+                                    <td class="text-black font-weight-bold"><strong>₹<%= total.toFixed(2) %></strong></td>
                                 </tr>
                             </tbody>
                         </table>
                         <div class="form-group">
                             <label for="wallet-balance" class="text-black">Wallet Balance</label><br>
-                            <p>Your available balance: ₹<%= user.wallet %></p>
+                            <p>Your available balance: ₹<%= user.wallet.toFixed(2) %></p>
 
                             <input type="checkbox" id="use-wallet" name="useWallet" value="true">
                                 <label for="use-wallet">Use wallet balance</label><br>
                 
-                            <!-- <% if (user.wallet > 0) { %>
-                                <input type="checkbox" id="use-wallet" name="useWallet" value="true">
-                                <label for="use-wallet">Use wallet balance</label>
-                            <% } else { %>
-                                <p class="text-muted">You have no balance in your wallet.</p>
-                            <% } %> -->
-                            <!-- <label for="payment-method" class="text-black">Payment Method</label><br> -->
+                            
                             <input type="radio" id="cod" name="paymentMethod" value="COD" >
                             <label for="cod">Cash on Delivery</label><br>
                             <input type="radio" id="razorpay" name="paymentMethod" value="Razorpay" >
@@ -166,88 +190,7 @@
     
     <script>
 
-// document.getElementById('placeOrderForm').addEventListener('submit',async function(event) {
-//     event.preventDefault();
 
-//     const selectedAddress = document.querySelector('input[name="addressId"]:checked');
-
-//     if (!selectedAddress) {
-//         alert('Please select an address before placing your order.');
-//         return; 
-//     }
-    
-//     const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
-
-//     if (paymentMethod === 'Razorpay'){
-//         try {
-//             const response = await fetch('/create-razorpay-order', {
-//                     method: 'POST',
-//                     headers: {
-//                         'Content-Type': 'application/json'
-//                     },
-//                     body: JSON.stringify({
-//                         amount:`<%= total %>`
-                        
-//                     })
-//                 });
-//                 const order = await response.json();
-
-//                if (!order.success) {
-//                     alert('Failed to create Razorpay order');
-//                    return;
-//                 }
-//                 const options = {
-//                     "key": "<%= process.env.RAZORPAY_ID_KEY %>",
-//                     "amount": order.amount,
-//                     "currency": "INR",
-//                     "name": "Homey",
-//                     "description": "Order Payment",
-//                     "order_id": order.id,
-//                     "handler": function (response) {
-                    
-//                         fetch('/place-order', {
-//                             method: 'POST',
-//                             headers: {
-//                                 'Content-Type': 'application/json'
-//                             },
-//                             body: JSON.stringify({
-//                                 razorpay_payment_id: response.razorpay_payment_id,
-//                                 razorpay_order_id: response.razorpay_order_id,
-//                                 razorpay_signature: response.razorpay_signature,
-//                                 addressId: document.querySelector('input[name="addressId"]:checked').value,
-//                                 paymentMethod: 'Razorpay'
-//                             })
-//                         })
-//                         .then(res => res.json())
-//                         .then(data => {
-//                             if (data.success) {
-//                                 window.location.href = '/thankyou';
-//                             } else {
-//                                 alert('Payment failed, please try again.');
-//                             }
-//                         })
-//                         .catch(err => console.error('Error:', err));
-//                     },
-//                     "prefill": {
-//                         "name": "<%= user.name %>",
-//                         "email": "<%= user.email %>",
-//                         "contact": "<%= user.phone %>"
-//                     },
-//                     "theme": {
-//                         "color": "#3399cc"
-//                     }
-//                 };
-
-//                 const rzp1 = new Razorpay(options);
-//                 rzp1.open();
-//         } catch (error) {
-//             console.error('Error creating Razorpay order:', error);
-//         }
-//     }else {
-//             this.submit(); 
-//         }
-
-// });
 
 document.addEventListener('DOMContentLoaded', function()  {
     const placeOrderButton = document.getElementById('placeOrderButton');
@@ -262,8 +205,12 @@ document.addEventListener('DOMContentLoaded', function()  {
     if (useWallet && walletAmount >= total) {
         processOrder({ useWallet: true, paymentMethod: 'Wallet', total: total,addressId });
     } else if (paymentMethod === 'Razorpay') {
-        initiateRazorpay(total - (useWallet ? walletAmount : 0)); // Adjust the amount if wallet is used
+        initiateRazorpay(total - (useWallet ? walletAmount : 0)); 
     } else if (paymentMethod === 'COD') {
+        if(total>1500) {
+            alert("Order above Rs 1500 should not be allowed for COD")
+             return
+        }
         processOrder({ useWallet: useWallet, paymentMethod: 'COD', total: total - (useWallet ? walletAmount : 0), addressId});
     } else {
         alert('Please select a payment method or use wallet balance.');
@@ -283,7 +230,7 @@ function initiateRazorpay(amount) {
                 "key": "<%= process.env.RAZORPAY_ID_KEY %>",
                 "amount": data.amount,
                 "order_id": data.id,
-                "name": "Your Company Name",
+                "name": "Homey",
                 "description": "Payment for Order",
                 "handler": function(response) {
                     processOrder({
@@ -292,6 +239,7 @@ function initiateRazorpay(amount) {
                         razorpay_payment_id: response.razorpay_payment_id,
                         razorpay_order_id: response.razorpay_order_id,
                         razorpay_signature: response.razorpay_signature,
+                        paymentStatus: 'Completed',
                         addressId: document.querySelector('input[name="addressId"]:checked').value,
                         total: amount
                     });
@@ -303,6 +251,20 @@ function initiateRazorpay(amount) {
                 },
                 "theme": {
                     "color": "#3399cc"
+                },
+                "modal": {
+                    // Triggered when Razorpay modal is closed or payment fails
+                    "ondismiss": function() {
+                        // Handle payment failure scenario
+                        console.log("Payment was not completed or failed");
+                        processOrder({
+                            useWallet: document.getElementById('use-wallet').checked,
+                            paymentMethod: 'Razorpay',
+                            paymentStatus: 'Failed', // Set payment status to 'Failed'
+                            addressId: document.querySelector('input[name="addressId"]:checked').value,
+                            total: amount
+                        });
+                    }
                 }
             };
             var rzp1 = new Razorpay(options);
@@ -384,6 +346,41 @@ function deleteAddress(addressId) {
         }
 
         
+    </script>
+    <script>
+        document.getElementById('applyCouponBtn').addEventListener('click', async function() {
+        const couponCode = document.getElementById('coupon').value;
+        
+        const response = await fetch('/cart/apply-coupon', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ couponCode })
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            
+            window.location.reload();
+        } else {
+            alert(result.message);
+        }
+    });
+
+    document.getElementById('removeCouponBtn').addEventListener('click', async function() {
+        const response = await fetch('/cart/remove-coupon', {
+            method: 'POST'
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            
+            window.location.reload();
+        } else {
+            alert(result.message);
+        }
+    });
     </script>
 </body>
 
