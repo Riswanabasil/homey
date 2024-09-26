@@ -9,6 +9,7 @@ const ordersController=require('../controllers/admin/ordersController')
 const couponController=require('../controllers/admin/couponController')
 const offerController=require('../controllers/admin/offerController')
 const salesController=require('../controllers/admin/salesController')
+const bannerController=require('../controllers/admin/bannerController')
 
 // admin router
 router.get("/",adminController.loadLogin)
@@ -64,6 +65,14 @@ router.get('/sales-report',admin.isAdmin,salesController.loadSales)
 router.get('/fetch-sales-data',salesController.fetchSalesData)
 router.get('/download-sales-report-pdf', salesController.downloadPdf)
 router.get('/path-to-excel-download',salesController.downloadExcel)
+
+//banner
+
+router.get('/banner', bannerController.getAllBanners)
+router.get('/banner/add', (req, res) => res.render('addBanner')); 
+router.post('/banner/add', bannerController.addBanner); 
+router.get('/banner/edit/:id', bannerController.getEditBannerPage);
+router.post('/banner/edit/:id', bannerController.editBanner);
 
 
 module.exports=router

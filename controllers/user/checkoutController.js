@@ -25,11 +25,13 @@ const loadCheckout = async (req, res) => {
                 productName: product.productName,
                 quantity: item.quantity,
                 salePrice: product.salePrice,
-                total: item.quantity * product.salePrice,
+                total: item.quantity * (product.salePrice - (product.salePrice * product.productOffer / 100)),
+                offer:product.productOffer
             };
         });
 
         const cartItems = await Promise.all(cart);
+        const cartTotal= cartItems.reduce((sum, item) => sum + item.salePrice, 0);
         const subtotal = cartItems.reduce((sum, item) => sum + item.total, 0);
         const deliveryFee = 70;
 
@@ -42,7 +44,7 @@ const loadCheckout = async (req, res) => {
 
         const coupons = await Coupon.find({ expiry: { $gte: new Date() } });
 
-        res.render('checkout', { user, cart: cartItems, subtotal, deliveryFee, total,discount,cartCount,session: req.session,coupons });
+        res.render('checkout', { user, cart: cartItems, cartTotal, deliveryFee, total,discount,cartCount,session: req.session,coupons });
     } catch (error) {
         console.error('Error loading checkout page:', error);
         res.status(500).send('Server error');
@@ -58,9 +60,8 @@ const createRazorpayOrder = async (req, res) => {
             key_secret: process.env.RAZORPAY_SECRET_KEY,
         });
 
-        // Create an order in Razorpay
         const options = {
-            amount: Math.round(amount * 100), // amount in the smallest currency unit (paise)
+            amount: Math.round(amount * 100), 
             currency: "INR",
             receipt: `receipt_${Date.now()}`
         };
@@ -215,6 +216,17 @@ const placeOrder = async (req, res) => {
             };
         });
 
+
+        for (const item of products) {
+            const product = await Product.findById(item.productId);
+            if (product && product.quantity < item.quantity) {
+                return res.status(400).json({ 
+                    
+                    error: `The product "${product.productName}" has only ${product.quantity} in stock, but you requested ${item.quantity}.` 
+                });
+            }
+        }
+
         const deliveryFee = 70;
         const discount = req.session.coupon ? req.session.coupon.discount : 0;
         let total = subtotal + deliveryFee - discount;
@@ -242,10 +254,10 @@ const placeOrder = async (req, res) => {
             discount,
             total,
             paymentMethod,
-            paymentStatus: paymentStatus || 'Pending' // Initialize with 'Pending' or provided status
+            paymentStatus: paymentStatus || 'Pending' 
         });
 
-        // If Razorpay is used, and payment failed or succeeded, attach Razorpay payment details
+        
         if (paymentMethod === 'Razorpay') {
             if (paymentStatus === 'Completed') {
                 newOrder.razorpay = {
@@ -284,6 +296,27 @@ const placeOrder = async (req, res) => {
     } catch (error) {
         console.error('Error placing order:', error);
         res.status(500).send('Server error');
+    }
+};
+const validateCartStock = async (req, res) => {
+    try {
+        const userId = req.session.user;
+        const user = await User.findById(userId).populate('cart.productId');
+
+        for (const cartItem of user.cart) {
+            const product = cartItem.productId;
+            if (product.quantity < cartItem.quantity) {
+                return res.status(400).json({
+                    success: false,
+                    message: `The product "${product.productName}" has only ${product.quantity} in stock, but you requested ${cartItem.quantity}.`
+                });
+            }
+        }
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error validating cart stock:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
@@ -363,4 +396,4 @@ const processOrder = async (req, res) => {
     }
 };
 
-module.exports={loadCheckout,placeOrder,loadThankyou,createRazorpayOrder,retryPayment,processOrder}
+module.exports={loadCheckout,placeOrder,loadThankyou,createRazorpayOrder,retryPayment,processOrder,validateCartStock }

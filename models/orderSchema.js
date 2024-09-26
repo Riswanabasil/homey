@@ -30,7 +30,20 @@ const orderSchema = new mongoose.Schema({
             },appliedOffer: { 
                 type: Number,
                 default: 0
-            }
+            },status: {   // Add product-specific status
+                type: String,
+                default: 'Order Placed',
+                enum: ['Order Placed', 'Shipped', 'Delivered', 'Cancelled', 'Returned']
+            },
+            statusHistory: [  // Track status history for each product
+                {
+                    status: { 
+                        type: String, 
+                        enum: ['Order Placed', 'Shipped', 'Delivered', 'Cancelled', 'Returned'] 
+                    },
+                    timestamp: { type: Date, default: Date.now }
+                }
+            ]
         }
     ],
     address: {

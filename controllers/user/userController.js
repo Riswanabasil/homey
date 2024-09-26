@@ -5,6 +5,7 @@ const bcrypt=require("bcrypt")
 const Product=require("../../models/productSchema")
 const Category=require("../../models/categorySchema")
 const Offer=require("../../models/OfferSchema")
+const Banner=require("../../models/bannerSchema")
 //load home page
 // const loadHomepage=async(req,res)=>{
 //     try {
@@ -18,9 +19,10 @@ const Offer=require("../../models/OfferSchema")
 
 const loadHomepage = async (req, res) => {
     try {
-        const products = await Product.find({}).limit(3).exec();  
+        const products = await Product.find({}).skip(2).limit(3).exec();  
+        const banner = await Banner.findOne();
 
-        return res.render("home", { products });  
+        return res.render("home", { products,banner });  
     } catch (error) {
         console.log("Home page is not loading", error);
         res.status(500).send("Server error");
@@ -336,9 +338,10 @@ const getProductDetails=async (req, res) => {
         if (!product || product.isBlocked) {
             return res.redirect('/shop');
           }
+          const discountedPrice = product.salePrice - (product.salePrice * product.productOffer / 100);
         const relatedProducts = await Product.find({ category: product.category, _id: { $ne: product._id } }).limit(5);
         const user= await User.findById(req.session.user).populate('wishlist')
-        res.render('detail', { product, relatedProducts,user,cartCount });
+        res.render('detail', { product, relatedProducts,user,cartCount,discountedPrice });
     } catch (error) {
         console.error('Error fetching product detail:', error);
         res.redirect('/');

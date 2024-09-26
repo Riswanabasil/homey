@@ -111,6 +111,7 @@
         <p>Date: <strong><%= order.createdAt.toDateString() %></strong></p>
         <p>Total: <strong>₹<%= order.total %></strong></p>
         <p>Payment Method: <strong><%= order.paymentMethod %></strong></p>
+        <p>Coupon: <strong><%=order.discount?order.discount :  "No coupon is applied" %></strong></p>
 
         <h4>Order Status: <%= order.status %></h4>
         <form action="/admin/orders/<%= order._id %>/status" method="POST">

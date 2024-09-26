@@ -120,71 +120,161 @@
                             <td>₹<%= product.price %></td>
                             <td><%= product.quantity %></td>
                             <td>₹<%= product.price * product.quantity %></td>
+                            <td>
+                                <% if (order.status === 'Order Placed' || order.status === 'Shipped') { %>
+                                    <form id="cancelProductForm-<%= product.productId._id  %>" action="/orders/cancel/product/<%= order.orderId %>/<%= product.productId._id  %>" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn btn-danger btn-sm" onclick="confirmCancel('<%= product.productId._id  %>')">Cancel Product</button>
+                                    </form>
+                                <% } else if (order.status === 'Delivered') { %>
+                                    <div class="d-flex flex-column"> 
+                                        <form id="returnProductForm-<%= product.productId._id %>" action="/orders/return/product/<%= order.orderId %>/<%= product.productId._id %>" method="POST" style="margin-bottom: 10px;">
+                                            <button type="submit" class="btn btn-warning btn-sm" onclick="confirmReturn( '<%= product.productId._id %>')">Return Product</button>
+                                        </form>
+                                        <a href="/orders/invoice/<%= order.orderId %>" class="btn btn-info btn-sm">Invoice Download</a>
+                                    </div>
+                                <% } %>
+                            </td>
                         </tr>
-                    <% }) %>
+                    <% }); %>
+                    <% if (order.paymentStatus === 'Failed') { %>
+                        <tr>
+                            <td colspan="5" style="text-align:center;"> 
+                                <button id="retryPaymentBtn" class="btn btn-danger" onclick="retryPayment('<%= order.orderId %>')">Retry Payment</button>
+                            </td>
+                        </tr>
+                    <% } %>
                 </tbody>
             </table>
-
-            <% if (order.status === 'Order Placed' || order.status === 'Shipped') { %>
-                <form id="cancelOrderForm-<%= order._id %>" action="/orders/cancel/<%= order._id %>" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-danger btn-sm"  onclick="confirmCancel('<%= order._id %>')">Cancel</button>
-                </form>
-            <% } else if (order.status === 'Delivered') { %>
-                <form id="returnOrderForm-<%= order._id %>" action="/orders/return/<%= order._id %>" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-warning btn-sm" onclick="confirmReturn('<%= order._id %>')">Return</button>
-                </form>
-                <a href="/orders/invoice/<%= order.orderId %>" class="btn btn-info btn-sm">Invoice Download</a>
-            <% } %>
-            <% if (order.paymentStatus === 'Failed') { %>
-                <button id="retryPaymentBtn" class="btn btn-danger">Retry Payment</button>
-            <% } %>
         </div>
     </div>
     <p>Name: <%= user.name %></p>
     <script>
-        function confirmCancel(orderId) {
-            event.preventDefault()
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "You won't be able to revert this!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, cancel it!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById(`cancelOrderForm-${orderId}`).submit();
+    function confirmCancel(productId) 
+    {
+        event.preventDefault(); 
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, cancel it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                var form = document.getElementById(`cancelProductForm-${productId}`);
+
+                if (form) {
+                    var formData = new FormData(form);
+
+                    fetch(form.action, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            return response.json();
+                        } else {
+                            throw new Error('Server responded with a non-OK status');
+                        }
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            var cancelButton = form.querySelector(`button[onclick="confirmCancel('${productId}')"]`);
+                            if (cancelButton) {
+                                cancelButton.style.display = 'none';
+                            }
+                            Swal.fire('Cancelled!', 'Your product has been cancelled.', 'success');
+                        } else {
+                            Swal.fire('Failed!', 'Failed to cancel the product.', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire('Error!', 'An error occurred while canceling the product.', 'error');
+                    });
+                } else {
+                    console.error('Form not found:', `cancelProductForm-${productId}`);
+                    Swal.fire('Error!', 'Form not found. Please try again.', 'error');
                 }
-            });
-        }
+            }
+        });
+    }
+
+
+function confirmReturn(productId) {
+    event.preventDefault();
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#f39c12',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, return it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // document.getElementById(`returnProductForm-${productId}`).submit();
+            var form = document.getElementById(`returnProductForm-${productId}`);
+            if (form){
+                var formData = new FormData(form);
+
+                    fetch(form.action, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            return response.json();
+                        } else {
+                            throw new Error('Server responded with a non-OK status');
+                        }
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            var cancelButton = form.querySelector(`button[onclick="confirmReturn('${productId}')"]`);
+                            if (cancelButton) {
+                                cancelButton.style.display = 'none';
+                            }
+                            Swal.fire({
+  title: 'Returned!',
+  text: 'Your product has been returned.',
+  icon: 'success',
+  confirmButtonText: 'OK'
+}).then((result) => {
+  if (result.isConfirmed) {
     
-        function confirmReturn(orderId) {
-            event.preventDefault()
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "You won't be able to revert this!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#f39c12',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, return it!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById(`returnOrderForm-${orderId}`).submit();
+    window.location.reload();
+  }
+})
+                        } else {
+                            Swal.fire('Failed!', 'Failed to cancel the product.', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire('Error!', 'An error occurred while canceling the product.', 'error');
+                    });
+            }else {
+                    console.error('Form not found:', `cancelProductForm-${productId}`);
+                    Swal.fire('Error!', 'Form not found. Please try again.', 'error');
                 }
-            });
         }
+
+
+    });
+}
+
 
         document.addEventListener('DOMContentLoaded', function() {
     const retryPaymentBtn = document.getElementById('retryPaymentBtn');
 
     if (retryPaymentBtn) {
         retryPaymentBtn.addEventListener('click', function() {
-            // Get the order ID (you might need to set it in your template)
+            
             const orderId = '<%= order._id %>';
 
-            // Fetch order details and retry the payment
+            
             fetch(`/retry-payment/${orderId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
@@ -192,7 +282,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    initiateRazorpayRetry(data.order); // Initiates Razorpay again with the retry order details
+                    initiateRazorpayRetry(data.order); 
                 } else {
                     alert('Error in retrying payment, please try again.');
                 }
@@ -213,19 +303,19 @@ function initiateRazorpayRetry(order) {
     .then(data => {
         if (data.success) {
             const options = {
-                "key": "<%= process.env.RAZORPAY_ID_KEY %>", // Razorpay API key
-                "amount": data.amount, // Amount in paise
-                "order_id": data.id, // Razorpay order ID
+                "key": "<%= process.env.RAZORPAY_ID_KEY %>", 
+                "amount": data.amount, 
+                "order_id": data.id, 
                 "name": "Your Company Name",
                 "description": "Payment for Order",
                 "handler": function(response) {
-                    // When the retry payment is successful, send the updated payment info to the backend
+                 
                     processOrder({
                         paymentMethod: 'Razorpay',
                         razorpay_payment_id: response.razorpay_payment_id,
                         razorpay_order_id: response.razorpay_order_id,
                         razorpay_signature: response.razorpay_signature,
-                        orderId: order._id, // Attach the order ID to update the payment status
+                        orderId: order._id, 
                         total: amount,
                         paymentStatus: 'Completed'
                     });
@@ -240,7 +330,7 @@ function initiateRazorpayRetry(order) {
                 }
             };
             var rzp1 = new Razorpay(options);
-            rzp1.open(); // Opens the Razorpay modal for retry payment
+            rzp1.open(); 
         } else {
             alert('Failed to initiate payment retry. Please try again.');
         }

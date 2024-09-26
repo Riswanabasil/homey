@@ -59,7 +59,7 @@ const fetchSalesData = async (req, res) => {
             },
             orders: orders.map(order => ({
                 date: order.createdAt.toISOString().substring(0, 10),
-                orderId: order._id,
+                orderId: order.orderId,
                 coupon: order.discount,
                 products: order.products.map(product => ({
                     name: product.productId.productName,
@@ -104,13 +104,13 @@ async function getOrders(startDate, endDate, period) {
         const orders = await Order.find(filter).populate('products.productId');
         return orders.map(order => ({
             date: order.createdAt.toISOString().substring(0, 10),
-            orderId: order._id.toString(),  // Convert ObjectId to string
+            orderId: order.orderId.toString(),  
             coupon: order.discount,
             products: order.products.map(product => ({
-                name: product.productId.productName, // Ensure correct path to productName
+                name: product.productId.productName, 
                 quantity: product.quantity,
                 discount: product.appliedOffer,
-                total: product.price // Calculate total price per product
+                total: product.price 
             }))
         }));
         
@@ -120,43 +120,6 @@ async function getOrders(startDate, endDate, period) {
     }
 }
 
-
-
-const downloadPd=async (req, res) => {
-    const { startDate, endDate, period } = req.query;
-
-    try {
-        const orders = await getOrders(startDate, endDate, period);
-
-        if (!orders) {
-            throw new Error("No orders fetched");
-        }
-        
-        const doc = new PDFDocument();
-        res.setHeader('Content-Disposition', 'attachment; filename="sales-report.pdf"');
-        res.setHeader('Content-Type', 'application/pdf');
-
-        doc.pipe(res);
-
-        doc.fontSize(25).text('Sales Report', { align: 'center' });
-        doc.moveDown();
-        
-        orders.forEach(order => {
-            doc.fontSize(12);
-            doc.text(`Date: ${order.date}`, { align: 'left' });
-            doc.text(`Order ID: ${order.orderId}`, { align: 'left' });
-            order.products.forEach(product => {
-                doc.text(`Product: ${product.name}, Quantity: ${product.quantity}, Price: ₹${product.total.toFixed(2)}`, { align: 'left' });
-            });
-            doc.moveDown();
-        });
-
-        doc.end();
-    } catch (error) {
-        console.error('Error generating PDF:', error);
-        res.status(500).send('Server error occurred while generating the PDF');
-    }
-};
 
 const downloadPdf = async (req, res) => {
     const { startDate, endDate, period } = req.query;
@@ -176,19 +139,10 @@ const downloadPdf = async (req, res) => {
         doc.fontSize(16).text('Sales Report', { align: 'center' });
         doc.moveDown(2);
 
-        // Adjusting column positions further based on feedback
-        // const columnPositions = {
-        //     date: 50,
-        //     orderId: 120,
-        //     product: 270,
-        //     quantity: 380, 
-        //     price: 480 
-        // };
-
         const columnPositions = {
             date: 50,
             orderId: 150,
-            product: 300,
+            product: 350,
             quantity: 420,
             price: 480
         };
@@ -203,13 +157,9 @@ const downloadPdf = async (req, res) => {
         doc.text('Price', columnPositions.price, 80);
         doc.moveDown();
 
-        // Line below headers
-        // doc.moveTo(50, doc.y).lineTo(650, doc.y).stroke();
-
         doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke();
         doc.moveDown(0.5);
 
-        // Order data
         orders.forEach(order => {
             doc.fontSize(10);
             order.products.forEach(product => {

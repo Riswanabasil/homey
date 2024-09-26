@@ -23,7 +23,6 @@ const loadDashboard=async (req, res) => {
     try {
         const filter = req.query.timePeriod || 'daily'; 
 
-        console.log(filter)
 
     
         const salesData = await getSalesData(filter);
@@ -77,13 +76,42 @@ async function getSalesData(timePeriod) {
     let matchQuery = {};
     const currentDate = new Date();
 
-    if (timePeriod === 'weekly') {
+    // if (timePeriod === 'weekly') {
+    //     matchQuery = {
+    //         createdAt: {
+    //             $gte: new Date(currentDate.setDate(currentDate.getDate() - 7))  
+    //         }
+    //     };
+    if (timePeriod === 'daily') {
+        // Set the start and end of the day
+        const startOfDay = new Date(currentDate.setHours(0, 0, 0, 0)); // Start of today
+        const endOfDay = new Date(currentDate.setHours(23, 59, 59, 999)); // End of today
         matchQuery = {
             createdAt: {
-                $gte: new Date(currentDate.setDate(currentDate.getDate() - 7))  
+                $gte: startOfDay,
+                $lte: endOfDay
             }
         };
-    } else if (timePeriod === 'monthly') {
+    }else if (timePeriod === 'weekly') {
+        const currentDate = new Date(); // Current date (start of the week)
+        const endDate = new Date(currentDate); // End date (6 days before current date)
+    
+        // Set the end date to 6 days before the current date
+        endDate.setDate(currentDate.getDate() - 6);
+    
+        // Set times to ensure we capture the full day
+        currentDate.setHours(23, 59, 59, 999); // End of the current day
+        endDate.setHours(0, 0, 0, 0); // Start of the end date (6 days ago)
+    
+        // Fetch sales data between the current date and 6 days before
+        matchQuery = {
+            createdAt: {
+                $gte: endDate, // Greater than or equal to 6 days ago
+                $lte: currentDate // Less than or equal to today
+            }
+        };
+    
+    }  else if (timePeriod === 'monthly') {
         
         const yearStart = new Date(currentDate.getFullYear(), 0, 1);  
         matchQuery = {
@@ -112,7 +140,6 @@ async function getSalesData(timePeriod) {
         },
         { $sort: { _id: 1 } }  
     ]);
-
     return sales;
 }
 

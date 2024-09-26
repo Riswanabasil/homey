@@ -165,7 +165,7 @@ span button {
                         <div class="form-group col-md-6">
                             <label for="salePrice">Sale Price</label>
                             <input type="number" class="form-control" id="salePrice" name="salePrice" value="<%= product ? product.salePrice : '' %>" required>
-                            <div id="salePrice-error" class="error-message">Please enter a non-negative sale price.</div>
+                            <div id="salePrice-error" class="error-message">Please enter a non-negative sale price or less than regular price</div>
                         </div>
                     </div>
                     <div class="form-row">
@@ -270,7 +270,7 @@ span button {
 
             const salePrice = document.getElementById('salePrice');
             const salePriceError = document.getElementById('salePrice-error');
-            if (salePrice.value < 0) {
+            if (salePrice.value < 0 || salePrice.value>regularPrice.value) {
                 salePriceError.style.display = 'block';
                 isValid = false;
             } else {
@@ -306,12 +306,20 @@ span button {
 
             const productImage = document.getElementById('files');
             const productImageError = document.getElementById('productImage-error');
-            if (!productImage.files.length && !product) {
-                productImageError.style.display = 'block';
-                isValid = false;
-            } else {
-                productImageError.style.display = 'none';
-            }
+            // if (!productImage.files.length && !product) {
+            //     productImageError.style.display = 'block';
+            //     isValid = false;
+            // } else {
+            //     productImageError.style.display = 'none';
+            // }
+
+    //         if (!productImage.files.length && typeof product === 'undefined') {
+    //     productImageError.style.display = 'block';
+    //     isValid = false;
+    // } else {
+    //     productImageError.style.display = 'none';
+    // }
+
 
             if (!isValid) {
         event.preventDefault();
@@ -377,8 +385,13 @@ function handleFileSelect(event) {
             reader.readAsDataURL(file);
         } else {
             alert(file.name + " is not a supported image type.");
+            unsupportedFileFound = true;
         }
     });
+
+    if (unsupportedFileFound) {
+        event.target.value = "";  
+    }
 }
 
 function finalizeCropping() {

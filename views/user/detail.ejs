@@ -263,13 +263,16 @@
 									<div class="grid__item product-single__meta--wrapper large--three-fifths">
 										<div class="product-single__meta grid__item five-eighths">
 											<div itemprop="offers" itemscope itemtype="http://schema.org/Offer">
-												<div class="price_wrapper"> <span id="PriceA11y" class="visually-hidden">Regular price</span> <span id="ProductPrice" class="product-single__price" itemprop="price" content="349.99"><span class=money>₹<%= product.salePrice %></span> </span>
+												<div class="price_wrapper"> <span id="PriceA11y" class="visually-hidden">Regular price</span> <span id="ProductPrice" class="product-single__price" itemprop="price" content="349.99"><span class=money>₹<%= discountedPrice.toFixed(2) %></span> </span>
 													<% if (product.productOffer > 0) { %>
 														<p>
 															<%= product.productOffer %>% off</p>
+															<p><s>M.R.P ₹<%= (product.salePrice).toLocaleString('en-IN') %></s></p>
 														<% } %>
+														
 															<div class="rating"> <span class="fa fa-star checked"></span> <span class="fa fa-star checked"></span> <span class="fa fa-star checked"></span> <span class="fa fa-star"></span> <span class="fa fa-star"></span> </div>
-												</div> <span class="rating"><span class="shopify-product-reviews-badge" data-id="9059380358"></span></span>
+												</div> 
+												<span class="rating"><span class="shopify-product-reviews-badge" data-id="9059380358"></span></span>
 												<meta itemprop="priceCurrency" content="USD">
 												<link itemprop="availability" href="http://schema.org/InStock">
 												<!-- <form action="https://digital-world-store.myshopify.com/cart/add" method="post" enctype="multipart/form-data" class="product-single__form AddToCartForm" id=""> -->
@@ -1338,15 +1341,6 @@
 		<style>
 
 		</style>
-		<!-- <h4>Related Products</h4>
-		<div class="row">
-			<% relatedProducts.forEach(related => { %>
-				<div class="col-md-3"> <a href="/product/<%= related._id %>">
-           <img src="<%= related.productImage[0] %>" class="img-fluid">
-           <p><%= related.productName %></p>
-         </a> </div>
-				<% }); %>
-		</div> -->
 		</div>
 		<script>
 			function addToCart(productId) {

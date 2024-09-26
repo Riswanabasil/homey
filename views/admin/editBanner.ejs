@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Banner | Admin Dashboard</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            background-color: #3b5d50;
+        }
+        .navbar-brand, .nav-link {
+            color: white !important;
+        }
+        .sidebar {
+            background-color: #3b5d50;
+            height: 100vh;
+            padding-top: 10px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 200px;
+            transition: all 0.3s;
+        }
+        .sidebar .brand {
+            font-size: 1.5rem;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            font-weight: bold;
+        }
+        .sidebar a {
+            color: white;
+            display: block;
+            padding: 10px 20px;
+            text-decoration: none;
+        }
+        .sidebar a:hover {
+            background-color: #2f4a41;
+        }
+        .content {
+            margin-left: 200px;
+            padding: 20px;
+        }
+        .card {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-group label {
+            font-weight: bold;
+        }
+        .btn-primary, .btn-secondary {
+            width: 150px;
+            margin-top: 15px;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .img-preview {
+            margin-top: 10px;
+        }
+        .cancel-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <a class="navbar-brand" href="#">Admin Dashboard</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link logout-btn" href="/admin/logout">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    
+    <div class="sidebar">
+        <div class="brand">Homey</div>
+        <a href="/admin/dashboard">Dashboard</a>
+        <a href="/admin/orders">Orders</a>
+        <a href="/admin/category">Category</a>
+        <a href="/admin/coupons">Coupon</a>
+        <a href="/admin/product">Product</a>
+        <a href="/admin/user">User</a>
+        <a href="/admin/referral">Offer</a>
+        <a href="/admin/sales-report">Sales</a>
+        <a href="/admin/banner">Banner</a>
+    </div>
+
+    <div class="content">
+        <h2>Edit Banner</h2>
+        <div class="card">
+            <form action="/admin/banner/edit/<%= banner._id %>" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="title">Banner Title</label>
+                    <input type="text" class="form-control" id="title" name="title" value="<%= banner.title %>" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Banner Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="3" required><%= banner.description %></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="currentImage">Current Banner Image</label><br>
+                    <img src="<%= banner.bannerImage %>" alt="Banner Image" class="img-thumbnail img-preview" width="300">
+                </div>
+                <div class="form-group">
+                    <label for="bannerImage">Upload New Banner Image (Optional)</label>
+                    <input type="file" class="form-control-file" id="bannerImage" name="bannerImage">
+                </div>
+                <div class="form-group d-flex justify-content-between">
+                    <button type="submit" class="btn btn-primary">Update Banner</button>
+                    <a href="/admin/banner" class="btn btn-secondary cancel-btn">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.navbar-toggler').on('click', function() {
+                $('.sidebar').toggleClass('active');
+                $('.content').toggleClass('active');
+            });
+        });
+    </script>
+</body>
+</html>

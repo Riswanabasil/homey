@@ -78,7 +78,8 @@ exports.addProduct = (req, res) => {
             try {
                 const { productName, description, category, regularPrice, salePrice, productOffer, quantity } = req.body;
                 const productImages = req.files.map(file => '/uploads/' + file.filename);
-                console.log(req.files);
+                productImages.pop()
+                // console.log(req.files);
                 const newProduct = new Product({
                     productName,
                     description,
@@ -125,6 +126,8 @@ exports.editProduct = (req, res) => {
                     const newImages = req.files.map(file => '/uploads/' + file.filename);
                     productImages = [...productImages, ...newImages];
                 }
+
+            
 
                 product.productName = productName;
                 product.description = description;

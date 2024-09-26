@@ -100,9 +100,9 @@
                             <p>Enter your coupon code if you have one, or select from available coupons:</p>
                         </div>
                         <div class="col-md-8 mb-3 mb-md-0">
-                            <!-- Dropdown to list available coupons -->
+                           
                             <select class="form-control py-3" id="coupon">
-                                <option value="">Select a coupon</option>
+                                
                                 <% coupons.forEach(coupon => { %>
                                     <option value="<%= coupon.name %>" <%= session.coupon && session.coupon.code === coupon.name ? 'selected' : '' %>>
                                         <%= coupon.name %> - <%= coupon.value %>₹ Off
@@ -137,13 +137,17 @@
                                 <% cart.forEach(item => { %>
                                     <tr>
                                         <td><%= item.productName %> <strong class="mx-2">x</strong> <%= item.quantity %></td>
-                                        <td>₹<%= item.total %></td>
+                                        <td>₹<%= item.salePrice %></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-black font-weight-bold"><strong>Offer</strong></td>
+                                        <td class="text-black"><%=item.offer%>%</td>
                                     </tr>
                                 <% }) %>
-                                <tr>
+                                <!-- <tr>
                                     <td class="text-black font-weight-bold"><strong>Cart Subtotal</strong></td>
-                                    <td class="text-black">₹<%= subtotal %></td>
-                                </tr>
+                                    <td class="text-black">₹<%= cartTotal*cartCount %></td>
+                                </tr> -->
                                 <% if (discount > 0) { %>
                                     <tr>
                                         <td>Discount</td>
@@ -202,19 +206,51 @@ document.addEventListener('DOMContentLoaded', function()  {
     const paymentMethod = paymentMethodInput ? paymentMethodInput.value : null;
     const addressId= document.querySelector('input[name="addressId"]:checked').value
 
-    if (useWallet && walletAmount >= total) {
-        processOrder({ useWallet: true, paymentMethod: 'Wallet', total: total,addressId });
-    } else if (paymentMethod === 'Razorpay') {
-        initiateRazorpay(total - (useWallet ? walletAmount : 0)); 
-    } else if (paymentMethod === 'COD') {
-        if(total>1500) {
-            alert("Order above Rs 1500 should not be allowed for COD")
-             return
-        }
-        processOrder({ useWallet: useWallet, paymentMethod: 'COD', total: total - (useWallet ? walletAmount : 0), addressId});
-    } else {
-        alert('Please select a payment method or use wallet balance.');
-    }
+    // if (useWallet && walletAmount >= total) {
+    //     processOrder({ useWallet: true, paymentMethod: 'Wallet', total: total,addressId });
+    // } else if (paymentMethod === 'Razorpay') {
+    //     initiateRazorpay(total - (useWallet ? walletAmount : 0)); 
+    // } else if (paymentMethod === 'COD') {
+    //     if(total>1500) {
+    //         alert("Order above Rs 1500 should not be allowed for COD")
+    //          return
+    //     }
+    //     processOrder({ useWallet: useWallet, paymentMethod: 'COD', total: total - (useWallet ? walletAmount : 0), addressId});
+    // } else {
+    //     alert('Please select a payment method or use wallet balance.');
+    // }
+
+    fetch('/validate-cart-stock', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        })
+        .then(response => response.json())
+        .then(stockData => {
+            if (stockData.success) {
+                // Proceed based on payment method
+                if (useWallet && walletAmount >= total) {
+                    processOrder({ useWallet: true, paymentMethod: 'Wallet', total: total, addressId });
+                } else if (paymentMethod === 'Razorpay') {
+                    initiateRazorpay(total - (useWallet ? walletAmount : 0));
+                } else if (paymentMethod === 'COD') {
+                    if (total > 1500) {
+                        alert("Order above Rs 1500 cannot be placed using COD");
+                        return;
+                    }
+                    processOrder({ useWallet: useWallet, paymentMethod: 'COD', total: total - (useWallet ? walletAmount : 0), addressId });
+                } else {
+                    alert('Please select a payment method or use wallet balance.');
+                }
+            } else {
+                // Stock validation failed
+                alert(stockData.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error validating stock:', error);
+            alert('An error occurred while validating stock. Please try again.');
+        });
+
 });
 })
 

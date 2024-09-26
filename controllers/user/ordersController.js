@@ -87,6 +87,99 @@ const cancelOrder = async (req, res) => {
     }
   };
 
+
+  // Cancel individual product
+const cancelProduct = async (req, res) => {
+  try {
+      const { orderId, productId } = req.params;
+      const order = await Order.findOne({orderId});
+      if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+      
+      const product = order.products.find(item => item.productId.toString() === productId);
+      if (!product) return res.status(404).json({ success: false, message: 'Product not found in order' });
+
+      if (product.status !== 'Order Placed' && product.status !== 'Shipped') {
+        return res.status(400).json({ success: false, message: 'Product cannot be cancelled at this stage.' });
+      }
+
+          const user = await User.findById(order.user);
+          const refundAmount = product.quantity * product.price;
+
+          user.wallet += refundAmount;
+
+          user.walletTransactions.push({
+              date: new Date(), 
+              type: 'credit',  
+              amount: refundAmount,  
+              description: 'Refund for cancelled product'
+          });
+          await user.save();
+
+         
+          await Product.findByIdAndUpdate(product.productId, { $inc: { quantity: product.quantity } });
+
+          
+          product.status = 'Cancelled';
+
+          
+          const allCancelled = order.products.every(item => item.status === 'Cancelled');
+          if (allCancelled) {
+              order.status = 'Cancelled';
+          }
+
+          await order.save();
+
+      res.json({ success: true, message: 'Product successfully cancelled.' });
+  } catch (error) {
+      console.error('Error canceling product:', error);
+      res.status(500).send('Server error');
+  }
+};
+
+// Return individual product
+const returnProduct = async (req, res) => {
+  try {
+      const { orderId, productId } = req.params;
+      const order = await Order.findOne({orderId});
+     
+
+      const product = order.products.find(item => item.productId.toString() === productId);
+      
+          const user = await User.findById(order.user);
+          const refundAmount = product.quantity * product.price;
+
+          user.wallet += refundAmount;
+
+          user.walletTransactions.push({
+              date: new Date(), 
+              type: 'credit',  
+              amount: refundAmount,  
+              description: 'Refund for returned product'
+          });
+          await user.save();
+
+          
+          await Product.findByIdAndUpdate(product.productId, { $inc: { quantity: product.quantity } });
+
+          product.status = 'Returned';
+
+          
+          const allReturned = order.products.every(item => item.status === 'Returned');
+          if (allReturned) {
+              order.status = 'Returned';
+          }
+
+          await order.save();
+      
+
+      res.json({ success: true, message: 'Product successfully Returned.' });
+  } catch (error) {
+      console.error('Error returning product:', error);
+      res.status(500).send('Server error');
+  }
+};
+
+
   
   const viewOrder = async (req, res) => {
     try {
@@ -180,7 +273,6 @@ console.log(req.params.orderId)
     doc.moveDown(2);
     doc.fontSize(12).fillColor('#000000');
     doc.text(`Discount: ₹${order.discount}`, summaryPosition, undefined, { align: 'right' });
-    // doc.text(`Total Price: ₹${order.subtotal}`, summaryPosition, undefined, { align: 'right' });
     doc.text(`Final Amount: ₹${order.total}`, summaryPosition, undefined, { align: 'right' });
 
     doc.end();
@@ -192,4 +284,4 @@ console.log(req.params.orderId)
 
 
 
-module.exports={getOrderHistory, cancelOrder,returnOrder,viewOrder,downloadInvoice}
+module.exports={getOrderHistory, cancelOrder,returnOrder,viewOrder,downloadInvoice,returnProduct,cancelProduct}
