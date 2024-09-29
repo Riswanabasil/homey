@@ -7,7 +7,7 @@ const userRouter=require("./routes/userRouter")
 const adminRouter=require("./routes/adminRouter")
 const passport=require("./config/passport")
 const multer=require("multer")
-// const flash=require('express-flash')
+
 
 const app=express()
 app.use(express.json())
@@ -23,18 +23,8 @@ app.use(session({
     }
 }))
 
-// app.use(flash())
-// app.use((req, res, next) => {
-//     res.locals.success = req.flash('success');
-//     res.locals.error = req.flash('error');
-//     next();
-// });
 app.use(passport.initialize())
 app.use(passport.session())
-// app.use((req,res,next)=>{
-//     res.setHeader("cache-control","no-store")
-//     next()
-// })
 
 app.use((req, res, next) => {
     res.setHeader("cache-control", "no-store, no-cache, must-revalidate, proxy-revalidate");
@@ -82,11 +72,8 @@ app.use(express.static(path.join(__dirname, 'public')))
 app.use("/",userRouter)
 app.use("/admin",adminRouter)
 app.use((req, res, next) => {
-    res.status(404).render('404');  // Render the 404 error page
+    res.status(404).render('404');  
 });
-// app.listen(3000,()=>{
-//     console.log("server running")
-// })
 
 app.listen(process.env.PORT,()=>{
     console.log("server is running");

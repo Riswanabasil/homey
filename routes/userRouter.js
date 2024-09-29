@@ -44,8 +44,6 @@ router.post('/edit-address/:id', isUserBlocked, isAuthenticated,profileControlle
 router.delete('/delete-address/:id',isUserBlocked, isAuthenticated, profileController.removeAddress);
 router.get('/orders',isUserBlocked, isAuthenticated, ordersController.getOrderHistory);
 router.get('/orders/view/:orderId',isUserBlocked, isAuthenticated, ordersController.viewOrder)
-router.post('/orders/cancel/:id', isUserBlocked, isAuthenticated, ordersController.cancelOrder);
-router.post('/orders/return/:id', isUserBlocked, isAuthenticated, ordersController.returnOrder);
 router.post('/orders/cancel/product/:orderId/:productId',isUserBlocked, isAuthenticated, ordersController.cancelProduct);
 router.post('/orders/return/product/:orderId/:productId',isUserBlocked, isAuthenticated, ordersController.returnProduct);
 router.get('/orders/invoice/:orderId',isUserBlocked, isAuthenticated, ordersController.downloadInvoice);

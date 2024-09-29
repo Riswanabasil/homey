@@ -6,16 +6,6 @@ const Product=require("../../models/productSchema")
 const Category=require("../../models/categorySchema")
 const Offer=require("../../models/OfferSchema")
 const Banner=require("../../models/bannerSchema")
-//load home page
-// const loadHomepage=async(req,res)=>{
-//     try {
-//         return res.render("home")
-//     } catch (error) {
-//         console.log("home page is not loading",error);
-//         res.status(500).send("server error")
-//     }
-// }
-// load signup
 
 const loadHomepage = async (req, res) => {
     try {

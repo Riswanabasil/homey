@@ -63,8 +63,8 @@
           <% orders.forEach(order => { %>
             <tr>
               <td>
-                <% order.products.forEach(product => { %> <!-- Loop through products in the order -->
-                  <%= product.productId.productName %><br> <!-- Assuming productId is populated with product details -->
+                <% order.products.forEach(product => { %> 
+                  <%= product.productId.productName %><br> 
                 <% }) %>
               </td>
               <td><%= new Date(order.createdAt).toLocaleDateString() %></td>

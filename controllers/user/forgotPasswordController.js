@@ -23,7 +23,7 @@ const sendResetOtp = async (req, res) => {
         req.session.resetOtp = otp;
         req.session.resetEmail = email;
 
-        res.render('verify-otp1', { message: '' }); // Redirect to OTP verification page
+        res.render('verify-otp1', { message: '' }); 
     } catch (error) {
         console.error('Error sending OTP for password reset:', error);
         res.render('forgot-password', { message: 'An error occurred. Please try again.' });
@@ -36,10 +36,6 @@ const sendResetOtp = async (req, res) => {
 const verifyResetOtp = async (req, res) => {
     try {
         const { otp } = req.body;
-       
-        // if (otp !== req.session.resetOtp) {
-        //     return res.status(400).json({ success: false, message: 'Invalid OTP, please try again' });
-        // }
        
         if(otp.trim() === req.session.resetOtp.trim()){
             return res.status(200).json({ success: true, redirectUrl: '/reset-password' });
@@ -57,34 +53,10 @@ const loadResetPassword=(req, res) => {
     res.render('reset-password', { message: '', email: req.session.resetEmail });
 };
 
-// const resetPassword = async (req, res) => {
-//     try {
-//         const { email } = req.session.resetEmail;
-//         const { newPassword, confirmPassword } = req.body;
-//         console.log(newPassword)
-//         console.log(confirmPassword)
-//         if (newPassword !== confirmPassword) {
-//             return res.render('reset-password', { message: 'Passwords do not match.', email });
-//         }
-
-//         const hashedPassword = await securePassword(newPassword);
-//         await User.updateOne({ email }, { password: hashedPassword });
-
-//         req.session.resetOtp = null;
-//         req.session.resetEmail = null;
-
-//         res.redirect('/login');
-//     } catch (error) {
-//         console.error('Error resetting password:', error);
-//         res.render('reset-password', { message: 'An error occurred. Please try again.', email });
-//     }
-// };
-
 const resetPassword = async (req, res) => {
     try {
         const { newPassword, confirmNewPassword } = req.body;
 
-        // Check if session contains resetEmail
         if (!req.session.resetEmail) {
             return res.render('forgot-password', { message: 'Session expired. Please try the password reset process again.' });
         }
@@ -95,11 +67,9 @@ const resetPassword = async (req, res) => {
 
         const email = req.session.resetEmail;
 
-        // Hash new password and update user
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         await User.updateOne({ email }, { password: hashedPassword });
 
-        // Clear the session data related to password reset
         req.session.resetEmail = null;
         req.session.resetOtp = null;
 

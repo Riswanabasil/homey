@@ -77,110 +77,6 @@ const createRazorpayOrder = async (req, res) => {
     }
 };
 
-
-
-const placeOrde = async (req, res) => {
-    try {
-        const userId = req.session.user;
-        const { useWallet, addressId, paymentMethod, razorpay_payment_id, razorpay_order_id, razorpay_signature} = req.body;
-
-        const user = await User.findById(userId).populate({
-            path: 'cart.productId',
-            populate: { path: 'category' } 
-        });
-
-        const address = await Address.findById(addressId);
-        if (!address) {
-            return res.status(400).json({ error: 'Address and payment method are required.' });
-        }
-
-        let subtotal = 0;
-        const products = user.cart.map(item => {
-            const product = item.productId;
-            const categoryOffer = product.category ? product.category.offer : 0;
-            const productOffer = product.productOffer;
-            const bestOffer = Math.max(categoryOffer, productOffer);
-
-            const discountedPrice = product.salePrice - (product.salePrice * bestOffer / 100);
-            const totalPriceForProduct = discountedPrice * item.quantity;
-
-            subtotal += totalPriceForProduct;
-
-            return {
-                productId: product._id,
-                quantity: item.quantity,
-                price: discountedPrice ,
-                appliedOffer: bestOffer
-            };
-        });
-
-        const deliveryFee = 70;
-        const discount = req.session.coupon ? req.session.coupon.discount : 0;
-        let total = subtotal + deliveryFee - discount;
-
-        let walletDeduction = 0;
-        if (useWallet === true && user.wallet > 0) {
-            walletDeduction = Math.min(user.wallet, total);
-            user.wallet -= walletDeduction;
-            total -= walletDeduction;
-            user.walletTransactions.push({
-                date: new Date(), 
-                type: 'debit',  
-                amount: walletDeduction,  
-                description: 'Wallet amount used to purchase'
-            });
-            await user.save();
-        }
-
-        const newOrder = new Order({
-            user: userId,
-            products,
-            address: addressId,
-            subtotal,
-            deliveryFee,
-            discount,
-            total,
-            paymentMethod,
-        });
-
-        if (paymentMethod === 'Razorpay') {
-            newOrder.razorpay = {
-                paymentId: razorpay_payment_id,
-                orderId: razorpay_order_id,
-                signature: razorpay_signature
-            };
-        }
-
-       
-        await newOrder.save();
-
-        // Decrement the product quantity in the inventory
-        for (const item of products) {
-            const product = await Product.findById(item.productId);
-            if (product) {
-                product.quantity -= item.quantity;
-                await product.save();
-            }
-        }
-
-
-
-       
-        user.cart = [];
-        await user.save();
-
-        delete req.session.coupon;
-
-        
-        
-        return res.json({ success: true });
-
-    } catch (error) {
-        console.error('Error placing order:', error);
-        res.status(500).send('Server error');
-    }
-};
-
 const placeOrder = async (req, res) => {
     try {
         const userId = req.session.user;
@@ -312,8 +208,7 @@ const validateCartStock = async (req, res) => {
                 });
             }
         }
-
-        res.json({ success: true });
+     res.json({ success: true });
     } catch (error) {
         console.error('Error validating cart stock:', error);
         res.status(500).json({ success: false, message: 'Server error' });
@@ -357,7 +252,6 @@ const processOrder = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Order not found' });
         }
 
-        // Update order with new payment details
         order.paymentMethod = paymentMethod;
         order.razorpay = {
             paymentId: razorpay_payment_id,
@@ -365,7 +259,6 @@ const processOrder = async (req, res) => {
             signature: razorpay_signature
         };
         order.paymentStatus = paymentStatus || 'Pending';
-        // order.status = 'Order Placed'; 
         order.status = paymentStatus === 'Completed' ? 'Order Placed' : 'Payment Failed';
 
         if (paymentStatus === 'Completed') {

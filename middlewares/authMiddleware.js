@@ -33,12 +33,7 @@ const isUserBlocked = async (req, res, next) => {
         return next();
     }
     return res.redirect('/login')
-  //   return res.send(`
-  //     <script>
-  //         alert("Please log in to your account.");
-  //         window.location.href = "/login";
-  //     </script>
-  // `);
+  
 };
 
 const checkProductBlocked = async (req, res, next) => {

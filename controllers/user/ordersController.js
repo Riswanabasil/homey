@@ -20,73 +20,6 @@ const getOrderHistory=async(req,res)=>{
         res.status(500).send('Server error');
       }
 }
-const cancelOrder = async (req, res) => {
-    try {
-      const orderId = req.params.id;
-      const order = await Order.findById(orderId);
-      
-      if (order.status === 'Order Placed' || order.status === 'Shipped') {
-
-        const user = await User.findById(order.user);
-        user.wallet += order.total; 
-
-        user.walletTransactions.push({
-          date: new Date(), 
-          type: 'credit',  
-          amount: order.total,  
-          description: 'Refund for cancel product'
-      });
-
-        await user.save();
-
-      
-        for (const item of order.products) {
-          await Product.findByIdAndUpdate(item.productId, { $inc: { quantity: item.quantity } });
-        }
-        order.status = 'Cancelled';
-        await order.save();
-      }
-  
-      res.redirect('/orders');
-    } catch (error) {
-      console.error('Error canceling order:', error);
-      res.status(500).send('Server error');
-    }
-  };
-  
-  const returnOrder = async (req, res) => {
-    try {
-      const orderId = req.params.id;
-      const order = await Order.findById(orderId);
-      
-      if (order.status === 'Delivered') {
-       
-        const user = await User.findById(order.user);
-        user.wallet += order.total;  
-
-        user.walletTransactions.push({
-          date: new Date(), 
-          type: 'credit',  
-          amount: order.total,  
-          description: 'Refund for return product'
-      });
-
-        await user.save();
-
-        for (const item of order.products) {
-          await Product.findByIdAndUpdate(item.productId, { $inc: { quantity: item.quantity } });
-        }
-        order.status = 'Returned';
-        await order.save();
-      }
-  
-      res.redirect('/orders');
-    } catch (error) {
-      console.error('Error returning order:', error);
-      res.status(500).send('Server error');
-    }
-  };
-
 
   // Cancel individual product
 const cancelProduct = async (req, res) => {
@@ -284,4 +217,4 @@ console.log(req.params.orderId)
 
 
 
-module.exports={getOrderHistory, cancelOrder,returnOrder,viewOrder,downloadInvoice,returnProduct,cancelProduct}
+module.exports={getOrderHistory,viewOrder,downloadInvoice,returnProduct,cancelProduct}

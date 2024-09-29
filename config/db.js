@@ -1,4 +1,3 @@
-const { log } = require("console")
 const mongoose=require("mongoose")
 const dotenv=require("dotenv").config()
 

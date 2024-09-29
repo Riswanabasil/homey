@@ -219,22 +219,20 @@ function getLabelsForTimePeriod(timePeriod, salesData) {
     if (timePeriod === "daily") {
         labels = salesData.map(item => new Date(item._id).toLocaleDateString());  
     }else if (timePeriod === "weekly") {
-        // Calculate the last 7 days starting from today
         const currentDate = new Date();
         const last7Days = [];
 
         for (let i = 6; i >= 0; i--) {
             const day = new Date();
-            day.setDate(currentDate.getDate() - i); // Get each of the past 7 days
+            day.setDate(currentDate.getDate() - i); 
             last7Days.push(day.toLocaleDateString());
         }
 
-        // Map the sales data to the last 7 days
         labels = last7Days;
 
         const salesByDay = last7Days.map(dayLabel => {
             const sale = salesData.find(item =>  new Date(item._id).toLocaleDateString() === dayLabel);
-            return sale ? sale.totalSales : 0; // If no sales for that day, return 0
+            return sale ? sale.totalSales : 0; 
         });
 
         console.log(salesByDay)
@@ -290,45 +288,5 @@ function getLabelsForTimePeriod(timePeriod, salesData) {
         });
     </script>
     
-    
-
-    <!-- <script>
-        const ctx = document.getElementById('salesChart').getContext('2d');
-        let salesChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels:  `<%= JSON.stringify(salesData.map(item => new Date(item._id).toLocaleDateString())) %>`, 
-                datasets: [{
-                    label: 'Total Sales',
-                    data: `<%= JSON.stringify(salesData.map(item => item.totalSales)) %>`, 
-                    borderColor: '#36A2EB',
-                    fill: false,
-                }]
-            },
-            options: {
-                scales: {
-                    x: { title: { display: true, text: 'Time' } },
-                    y: { title: { display: true, text: 'Total Sales' } }
-                }
-            },
-            
-        });
-
-        function updateChart() {
-            const filter = document.getElementById('filter').value;
-            window.location.href = `/admin/dashboard?filter=${filter}`;
-        }
-    </script>
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            $('.navbar-toggler').on('click', function() {
-                $('.sidebar').toggleClass('active');
-                $('.content').toggleClass('active');
-            });
-        });
-    </script> -->
 </body>
 </html>

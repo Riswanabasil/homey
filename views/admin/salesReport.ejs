@@ -258,7 +258,7 @@ function updateReportSummary(summary) {
 
 function updateOrdersTable(orders) {
     const tableBody = document.querySelector('#salesTable tbody');
-    tableBody.innerHTML = ''; // Clear existing rows
+    tableBody.innerHTML = ''; 
 
     orders.forEach(order => {
         order.products.forEach(product => {
@@ -280,28 +280,20 @@ function downloadPDF() {
     const period = document.getElementById('period').value;
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
-
-    // Construct the URL with query parameters
     const url = `/admin/download-sales-report-pdf?startDate=${startDate}&endDate=${endDate}&period=${period}`;
-
-    // Fetch call to initiate PDF download
     fetch(url)
-        .then(response => response.blob())  // Convert the response to a Blob (binary data)
+        .then(response => response.blob())  
         .then(blob => {
-            // Create a URL for the Blob
             const blobUrl = window.URL.createObjectURL(blob);
 
-            // Create a temporary anchor element to trigger the download
             const link = document.createElement('a');
             link.href = blobUrl;
-            link.download = 'sales-report.pdf';  // This will be the filename for the downloaded file
+            link.download = 'sales-report.pdf';  
 
-            // Append the anchor to the body, trigger click, and remove it
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
 
-            // Free up the Blob URL
             window.URL.revokeObjectURL(blobUrl);
         })
         .catch(error => console.error('Error downloading PDF:', error));
@@ -313,7 +305,7 @@ function downloadExcel() {
     const endDate = document.getElementById('endDate').value;
 
     const url = `/admin/path-to-excel-download?startDate=${startDate}&endDate=${endDate}&period=${period}`;
-    window.location.href = url; // Redirects to the backend route, triggering the file download
+    window.location.href = url; 
 }
     </script>
 

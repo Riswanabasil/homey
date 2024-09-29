@@ -144,10 +144,6 @@
                                         <td class="text-black"><%=item.offer%>%</td>
                                     </tr>
                                 <% }) %>
-                                <!-- <tr>
-                                    <td class="text-black font-weight-bold"><strong>Cart Subtotal</strong></td>
-                                    <td class="text-black">₹<%= cartTotal*cartCount %></td>
-                                </tr> -->
                                 <% if (discount > 0) { %>
                                     <tr>
                                         <td>Discount</td>
@@ -206,20 +202,6 @@ document.addEventListener('DOMContentLoaded', function()  {
     const paymentMethod = paymentMethodInput ? paymentMethodInput.value : null;
     const addressId= document.querySelector('input[name="addressId"]:checked').value
 
-    // if (useWallet && walletAmount >= total) {
-    //     processOrder({ useWallet: true, paymentMethod: 'Wallet', total: total,addressId });
-    // } else if (paymentMethod === 'Razorpay') {
-    //     initiateRazorpay(total - (useWallet ? walletAmount : 0)); 
-    // } else if (paymentMethod === 'COD') {
-    //     if(total>1500) {
-    //         alert("Order above Rs 1500 should not be allowed for COD")
-    //          return
-    //     }
-    //     processOrder({ useWallet: useWallet, paymentMethod: 'COD', total: total - (useWallet ? walletAmount : 0), addressId});
-    // } else {
-    //     alert('Please select a payment method or use wallet balance.');
-    // }
-
     fetch('/validate-cart-stock', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'}
@@ -227,7 +209,6 @@ document.addEventListener('DOMContentLoaded', function()  {
         .then(response => response.json())
         .then(stockData => {
             if (stockData.success) {
-                // Proceed based on payment method
                 if (useWallet && walletAmount >= total) {
                     processOrder({ useWallet: true, paymentMethod: 'Wallet', total: total, addressId });
                 } else if (paymentMethod === 'Razorpay') {
@@ -242,7 +223,6 @@ document.addEventListener('DOMContentLoaded', function()  {
                     alert('Please select a payment method or use wallet balance.');
                 }
             } else {
-                // Stock validation failed
                 alert(stockData.message);
             }
         })
@@ -289,14 +269,12 @@ function initiateRazorpay(amount) {
                     "color": "#3399cc"
                 },
                 "modal": {
-                    // Triggered when Razorpay modal is closed or payment fails
                     "ondismiss": function() {
-                        // Handle payment failure scenario
                         console.log("Payment was not completed or failed");
                         processOrder({
                             useWallet: document.getElementById('use-wallet').checked,
                             paymentMethod: 'Razorpay',
-                            paymentStatus: 'Failed', // Set payment status to 'Failed'
+                            paymentStatus: 'Failed', 
                             addressId: document.querySelector('input[name="addressId"]:checked').value,
                             total: amount
                         });
@@ -331,7 +309,7 @@ function processOrder(data) {
 
 function deleteAddress(addressId) {
     if (confirm('Are you sure you want to remove this address?')) {
-        // Perform the delete action, e.g., making an AJAX call to remove the address
+        
         fetch(`/delete-address/${addressId}`, {
             method: 'DELETE',
         })
@@ -339,7 +317,6 @@ function deleteAddress(addressId) {
         .then(data => {
             if (data.success) {
                 alert('Address removed successfully.');
-                // Optionally, remove the address element from the DOM
                 document.getElementById(`address${addressId}`).closest('.form-check').remove();
             } else {
                 alert('Failed to remove address.');

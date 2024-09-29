@@ -75,17 +75,9 @@ const loadDashboard=async (req, res) => {
 async function getSalesData(timePeriod) {
     let matchQuery = {};
     const currentDate = new Date();
-
-    // if (timePeriod === 'weekly') {
-    //     matchQuery = {
-    //         createdAt: {
-    //             $gte: new Date(currentDate.setDate(currentDate.getDate() - 7))  
-    //         }
-    //     };
     if (timePeriod === 'daily') {
-        // Set the start and end of the day
-        const startOfDay = new Date(currentDate.setHours(0, 0, 0, 0)); // Start of today
-        const endOfDay = new Date(currentDate.setHours(23, 59, 59, 999)); // End of today
+        const startOfDay = new Date(currentDate.setHours(0, 0, 0, 0)); 
+        const endOfDay = new Date(currentDate.setHours(23, 59, 59, 999)); 
         matchQuery = {
             createdAt: {
                 $gte: startOfDay,
@@ -93,21 +85,20 @@ async function getSalesData(timePeriod) {
             }
         };
     }else if (timePeriod === 'weekly') {
-        const currentDate = new Date(); // Current date (start of the week)
-        const endDate = new Date(currentDate); // End date (6 days before current date)
+        const currentDate = new Date(); 
+        const endDate = new Date(currentDate); 
     
-        // Set the end date to 6 days before the current date
+        
         endDate.setDate(currentDate.getDate() - 6);
     
-        // Set times to ensure we capture the full day
-        currentDate.setHours(23, 59, 59, 999); // End of the current day
-        endDate.setHours(0, 0, 0, 0); // Start of the end date (6 days ago)
-    
-        // Fetch sales data between the current date and 6 days before
+        
+        currentDate.setHours(23, 59, 59, 999); 
+        endDate.setHours(0, 0, 0, 0); 
+        
         matchQuery = {
             createdAt: {
-                $gte: endDate, // Greater than or equal to 6 days ago
-                $lte: currentDate // Less than or equal to today
+                $gte: endDate, 
+                $lte: currentDate 
             }
         };
     

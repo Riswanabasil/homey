@@ -11,7 +11,7 @@ const bannerSchema = new Schema({
         required: true,
     },
     bannerImage: {
-        type: String, // URL or path to the image
+        type: String, 
         required: true,
     },
     

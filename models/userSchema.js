@@ -64,17 +64,6 @@ const userSchema= new mongoose.Schema({
         type:Date,
         default:Date.now
     },
-    
-    // searchHistory:[{
-    //     category:{
-    //         type:Schema.Types.ObjectId,
-    //         ref:"Category"
-    //     },
-    //     searchedOn:{
-    //         type:Date,
-    //         default:Date.now
-    //     }
-    // }]
 })
 
 const User=mongoose.model("User",userSchema)

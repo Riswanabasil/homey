@@ -3,13 +3,12 @@ const Offer=require("../../models/OfferSchema")
 
 const viewOffer=async(req,res)=>{
     try {
-        const offer = await Offer.findOne(); // Assume there's only one offer document
+        const offer = await Offer.findOne();
         if (!offer) {
-            // Handle the case where no offer settings are found by initializing defaults
             return res.render('referral', {
                 offer: {
                     isActive: false,
-                    creditAmount: 0 // Set a sensible default or the last known good configuration
+                    creditAmount: 0 
                 }
             });
         }
@@ -22,7 +21,6 @@ const viewOffer=async(req,res)=>{
 const referralOffer=async(req,res)=>{
     const { creditAmount, isActive } = req.body;
 
-    // Validate isActive input
     if (isActive !== 'true' && isActive !== 'false') {
         return res.status(400).json({ message: 'Invalid input for isActive. Must be "true" or "false".' });
     }

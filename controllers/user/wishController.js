@@ -74,10 +74,8 @@ const addCart=async(req,res)=>{
 
         const productInCart = user.cart.find(item => item.productId.equals(productId));
         if (productInCart) {
-            // Increase quantity if already in cart
             productInCart.quantity += 1;
         } else {
-            // Add new product to cart
             user.cart.push({ productId, quantity: 1 });
         }
         await User.findByIdAndUpdate(

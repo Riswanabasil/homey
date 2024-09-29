@@ -98,8 +98,6 @@ const loadEditProfile = async (req, res) => {
         user.addresses.push(address._id);
         await user.save();
 
-        // res.redirect('/profile');
-
         const referrer = req.query.referrer || 'profile';
         res.redirect(`/${referrer}`);
     } catch (error) {

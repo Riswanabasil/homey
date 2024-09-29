@@ -188,13 +188,11 @@ const downloadExcel = async (req, res) => {
     const { startDate, endDate, period } = req.query;
 
     try {
-        // Reusing the getOrders function to fetch filtered data
         const orders = await getOrders(startDate, endDate, period);
 
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Sales Report');
 
-        // Add headers
         worksheet.columns = [
             { header: 'Date', key: 'date', width: 15 },
             { header: 'Order ID', key: 'orderId', width: 25 },
@@ -204,7 +202,6 @@ const downloadExcel = async (req, res) => {
             { header: 'Total', key: 'total', width: 15 }
         ];
 
-        // Add rows
         orders.forEach(order => {
             order.products.forEach(product => {
                 worksheet.addRow({
@@ -218,11 +215,9 @@ const downloadExcel = async (req, res) => {
             });
         });
 
-        // Set the headers for the response
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', 'attachment; filename="sales_report.xlsx"');
 
-        // Write to response
         await workbook.xlsx.write(res);
         res.end();
     } catch (error) {

@@ -14,9 +14,6 @@ exports.getAllBanners = async (req, res) => {
       }
 };
 
-
-
-// Multer configuration for handling file uploads
 const storage = multer.diskStorage({
     destination: './public/uploads/banners',
     filename: (req, file, cb) => {
@@ -27,9 +24,8 @@ const storage = multer.diskStorage({
 const upload = multer({
     storage: storage,
     limits: { fileSize: 1000000 },
-}).single('bannerImage'); // Single file upload
+}).single('bannerImage'); 
 
-// Add banner controller
 exports.addBanner = (req, res) => {
     upload(req, res, async (err) => {
         if (err) {
@@ -48,7 +44,7 @@ exports.addBanner = (req, res) => {
             });
 
             await newBanner.save();
-            res.redirect('/admin/banner'); // Redirect to the banner view page
+            res.redirect('/admin/banner'); 
         } catch (error) {
             console.error('Error adding banner:', error);
             res.status(500).send('Server error');
@@ -76,9 +72,8 @@ exports.editBanner = (req, res) => {
 
         try {
             const { title, description } = req.body;
-            let bannerImage = req.body.currentImage; // Default to the current image if no new image is uploaded
+            let bannerImage = req.body.currentImage; 
 
-            // If a new banner image is uploaded, replace the old one
             if (req.file) {
                 bannerImage = `/uploads/banners/${req.file.filename}`;
             }

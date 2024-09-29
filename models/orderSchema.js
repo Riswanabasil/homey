@@ -30,12 +30,12 @@ const orderSchema = new mongoose.Schema({
             },appliedOffer: { 
                 type: Number,
                 default: 0
-            },status: {   // Add product-specific status
+            },status: {  
                 type: String,
                 default: 'Order Placed',
                 enum: ['Order Placed', 'Shipped', 'Delivered', 'Cancelled', 'Returned']
             },
-            statusHistory: [  // Track status history for each product
+            statusHistory: [  
                 {
                     status: { 
                         type: String, 
@@ -73,20 +73,6 @@ const orderSchema = new mongoose.Schema({
         required: true,
         enum: ['COD', 'Razorpay','Wallet']
     },
-    // razorpay: {
-    //     orderId: {
-    //         type: String,
-    //         required: function() { return this.paymentMethod === 'Razorpay'; }
-    //     },
-    //     paymentId: {
-    //         type: String,
-    //         required: function() { return this.paymentMethod === 'Razorpay'; }
-    //     },
-    //     signature: {
-    //         type: String,
-    //         required: function() { return this.paymentMethod === 'Razorpay'; }
-    //     }
-    // },
     razorpay: {
         paymentId: {
             type: String,

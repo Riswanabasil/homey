@@ -51,15 +51,9 @@ const addToCart = async (req, res) => {
             if (productInCart.quantity >= 5) {
                 return res.json({ success: false, message: 'You cannot add more than 5 units of this product to your cart' });
             }
-            // if (productInCart.quantity + 1 > product.quantity) {
-            //     return res.json({ success: false, message: 'Not enough stock available' });
-            // }
             productInCart.quantity += 1;
            
         } else {
-            // if (product.quantity < 1) {
-            //     return res.json({ success: false, message: 'Not enough stock available' });
-            // }
             user.cart.push({ productId, quantity: 1 });
         }
 
@@ -105,11 +99,7 @@ const updateCartQuantity = async (req, res) => {
             user.cart.push({ productId, quantity });
         }
         
-
         await user.save();
-
-       
-        
 
         return res.json({ success: true, message: 'Cart updated successfully' });
     } catch (error) {
@@ -168,10 +158,7 @@ const applyCoupon=async(req,res)=>{
 }
 const removeCoupon=async (req, res) => {
     try {
-        // Remove the coupon from the session or database
         delete req.session.coupon;
-
-        // Recalculate the cart total without the coupon
         const userId = req.session.user;
         const user = await User.findById(userId).populate('cart.productId');
         const subtotal = user.cart.reduce((sum, item) => sum + item.quantity * item.productId.salePrice, 0);

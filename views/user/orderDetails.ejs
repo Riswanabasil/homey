@@ -147,7 +147,6 @@
             </table>
         </div>
     </div>
-    <p>Name: <%= user.name %></p>
     <script>
     function confirmCancel(productId) 
     {
@@ -214,7 +213,6 @@ function confirmReturn(productId) {
         confirmButtonText: 'Yes, return it!'
     }).then((result) => {
         if (result.isConfirmed) {
-            // document.getElementById(`returnProductForm-${productId}`).submit();
             var form = document.getElementById(`returnProductForm-${productId}`);
             if (form){
                 var formData = new FormData(form);
