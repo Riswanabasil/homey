@@ -73,11 +73,11 @@
                       <td>
                         <div class="input-group mb-3 d-flex align-items-center quantity-container" style="max-width: 120px;">
                           <div class="input-group-prepend">
-                              <button class="btn btn-outline-black decrease" type="button" onclick="updateCart('<%= item.productId._id %>', '<%= item.quantity - 1 %>')">&minus;</button>
+                              <button class="btn btn-outline-black decrease" type="button" onclick="updateCart('<%= item.productId._id %>', '<%= item.quantity - 1 %>')" <% if (item.quantity <= 1) { %> disabled <% } %>>&minus;</button>
                           </div>
                           <input type="text" class="form-control text-center quantity-amount"  id="quantity-<%= item.productId._id %>" name="quantity" size="5" value="<%= item.quantity %>" readonly>
                           <div class="input-group-append">
-                              <button class="btn btn-outline-black increase" type="button" onclick="updateCart('<%= item.productId._id %>', '<%= item.quantity + 1 %>')">&plus;</button>
+                              <button id="increase-button-<%= item.productId._id %>" class="btn btn-outline-black increase" type="button" onclick="updateCart('<%= item.productId._id %>', '<%= item.quantity + 1 %>')" >&plus;</button>
                           </div>
                       </div>
                       </td>
@@ -163,11 +163,24 @@
                   window.location.reload();
               });
           } else {
+            
               Swal.fire({
                   icon: 'error',
                   title: 'Error',
                   text: data.message,
-              });
+                  showConfirmButton: true,
+              }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.reload();
+        }
+    });
+              if (data.message.includes('more than 5') || data.message.includes('Only')) {
+                const increaseButton = document.querySelector(`#increase-button-${productId}`);
+                if (increaseButton) {
+                    increaseButton.disabled = true;
+                }
+            }
+
           }
       })
       .catch(error => {
