@@ -290,7 +290,12 @@ function confirmReturn(productId) {
                 if (data.success) {
                     initiateRazorpayRetry(data.order); 
                 } else {
-                    alert('Error in retrying payment, please try again.');
+                    Swal.fire({
+            icon: 'error',
+            title: 'An Error Occurred',
+            text: 'Error in retrying payment, please try again.',
+            confirmButtonText: 'OK'
+        });
                 }
             });
         });
@@ -338,7 +343,12 @@ function initiateRazorpayRetry(order) {
             var rzp1 = new Razorpay(options);
             rzp1.open(); 
         } else {
-            alert('Failed to initiate payment retry. Please try again.');
+            Swal.fire({
+            icon: 'error',
+            title: 'An Error Occurred',
+            text: 'Failed to initiate payment retry. Please try again.',
+            confirmButtonText: 'OK'
+        });
         }
     }).catch(error => console.error('Error initiating Razorpay for retry:', error));
 }
@@ -353,11 +363,21 @@ function processOrder(data) {
         if (data.success) {
             window.location.href = '/thankyou';
         } else {
-            alert('Order processing failed, please try again.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Order Failed',
+                text: 'Order processing failed, please try again.',
+                confirmButtonText: 'OK'
+            });
         }
     }).catch(error => {
         console.error('Error processing order:', error);
-        alert('An error occurred, please try again.');
+        Swal.fire({
+            icon: 'error',
+            title: 'An Error Occurred',
+            text: 'An error occurred during order processing. Please try again later.',
+            confirmButtonText: 'OK'
+        });
     });
 }
     </script>
