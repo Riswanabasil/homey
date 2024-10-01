@@ -12,6 +12,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link href="/css/tiny-slider.css" rel="stylesheet">
     <link href="/css/style.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>Checkout</title>
 </head>
 
@@ -210,25 +211,45 @@ document.addEventListener('DOMContentLoaded', function()  {
         .then(stockData => {
             if (stockData.success) {
                 if (useWallet && walletAmount >= total) {
-                    processOrder({ useWallet: true, paymentMethod: 'Wallet', total: total, addressId });
+                    processOrder({ useWallet: true, paymentMethod: 'Wallet', total: total, addressId,paymentStatus: 'Completed'});
                 } else if (paymentMethod === 'Razorpay') {
                     initiateRazorpay(total - (useWallet ? walletAmount : 0));
                 } else if (paymentMethod === 'COD') {
                     if (total > 1500) {
-                        alert("Order above Rs 1500 cannot be placed using COD");
+                        Swal.fire({
+                    icon: 'error',
+                    title: 'COD Limit Exceeded',
+                    text: 'Order above ₹1500 cannot be placed using COD.',
+                    confirmButtonText: 'Ok'
+                });
                         return;
                     }
                     processOrder({ useWallet: useWallet, paymentMethod: 'COD', total: total - (useWallet ? walletAmount : 0), addressId });
                 } else {
-                    alert('Please select a payment method or use wallet balance.');
+                    Swal.fire({
+                icon: 'warning',
+                title: 'Payment Method Required',
+                text: 'Please select a payment method or use your wallet balance.',
+                confirmButtonText: 'Ok'
+            });
                 }
             } else {
-                alert(stockData.message);
+                Swal.fire({
+            icon: 'error',
+            title: 'Stock Issue',
+            text: stockData.message,
+            confirmButtonText: 'Ok'
+        });
             }
         })
         .catch(error => {
             console.error('Error validating stock:', error);
-            alert('An error occurred while validating stock. Please try again.');
+            Swal.fire({
+        icon: 'error',
+        title: 'Stock Validation Failed',
+        text: 'An error occurred while validating stock. Please try again.',
+        confirmButtonText: 'Ok'
+    });
         });
 
 });
@@ -284,7 +305,12 @@ function initiateRazorpay(amount) {
             var rzp1 = new Razorpay(options);
             rzp1.open();
         } else {
-            alert('Failed to initiate payment process. Please try again.');
+            Swal.fire({
+        icon: 'error',
+        title: 'Stock Validation Failed',
+        text: 'Failed to initiate payment process. Please try again.',
+        confirmButtonText: 'Ok'
+    });
         }
     }).catch(error => console.error('Error initiating Razorpay:', error));
 }
@@ -299,35 +325,25 @@ function processOrder(data) {
         if (data.success) {
             window.location.href = '/thankyou';
         } else {
-            alert('Order processing failed, please try again.');
+            Swal.fire({
+        icon: 'error',
+        title: 'Stock Validation Failed',
+        text: 'Order processing failed, please try again.',
+        confirmButtonText: 'Ok'
+    });
         }
     }).catch(error => {
         console.error('Error processing order:', error);
-        alert('An error occurred, please try again.');
+        Swal.fire({
+        icon: 'error',
+        title: 'Stock Validation Failed',
+        text: 'An error occurred. Please try again.',
+        confirmButtonText: 'Ok'
+    });
+        
     });
 }
 
-function deleteAddress(addressId) {
-    if (confirm('Are you sure you want to remove this address?')) {
-        
-        fetch(`/delete-address/${addressId}`, {
-            method: 'DELETE',
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Address removed successfully.');
-                document.getElementById(`address${addressId}`).closest('.form-check').remove();
-            } else {
-                alert('Failed to remove address.');
-            }
-        })
-        .catch(error => {
-            console.error('Error removing address:', error);
-            alert('An error occurred. Please try again.');
-        });
-    }
-}
 
 
 
@@ -362,6 +378,7 @@ function deleteAddress(addressId) {
     </script>
     <script>
         document.getElementById('applyCouponBtn').addEventListener('click', async function() {
+            event.preventDefault();
         const couponCode = document.getElementById('coupon').value;
         
         const response = await fetch('/cart/apply-coupon', {
@@ -376,8 +393,15 @@ function deleteAddress(addressId) {
         if (result.success) {
             
             window.location.reload();
+           
+            
         } else {
-            alert(result.message);
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid Coupon',
+                text: result.message,
+                confirmButtonText: 'Ok'
+            })
         }
     });
 
@@ -391,7 +415,12 @@ function deleteAddress(addressId) {
             
             window.location.reload();
         } else {
-            alert(result.message);
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid Coupon',
+                text: result.message,
+                confirmButtonText: 'Ok'
+            })
         }
     });
     </script>

@@ -96,14 +96,21 @@
             <h3>Order Details</h3>
         </div>
         <div class="order-details-body">
+            <div class="row">
+                <div class="col-12 col-md-6">
             <p>Order Id: <strong><%= order.orderId %></strong></p>
             <p>Date: <strong><%= order.createdAt.toDateString() %></strong></p>
             <p>Total: <strong>₹<%= order.total %></strong></p>
+                </div>
+                <div class="col-12 col-md-6 text-md-end text-center">
             <p>Payment Method: <strong><%= order.paymentMethod %></strong></p>
 
             <h4 class="order-status <%= order.status.toLowerCase() %>">Order Status: <%= order.status %></h4>
+                </div>
+            </div>
 
             <h4>Order Details</h4>
+            <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>
@@ -145,6 +152,7 @@
                     <% } %>
                 </tbody>
             </table>
+        </div>
         </div>
     </div>
     <script>

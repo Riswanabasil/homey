@@ -174,7 +174,7 @@ const placeOrder = async (req, res) => {
         await newOrder.save();
 
         
-        if (newOrder.paymentStatus === 'Completed') {
+        if (newOrder.paymentStatus === 'Completed'||newOrder.paymentStatus === 'Pending') {
             for (const item of products) {
                 const product = await Product.findById(item.productId);
                 if (product) {
